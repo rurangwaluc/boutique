@@ -59,7 +59,7 @@ function productDetails(item: {
   size: string | null;
   color: string | null;
 }) {
-  return [item.customerType, item.size, item.color].filter(Boolean).join(' · ');
+  return [item.customerType, item.size, item.color].filter(Boolean).join(' / ');
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
@@ -225,6 +225,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         <p className="font-black text-[var(--text)]">{item.name}</p>
                         <div className="mt-1 space-y-1 text-xs font-bold text-[var(--muted)]">
                           <p>{item.category}</p>
+                          <p>{productDetails(item) || 'Size/color not saved'}</p>
                           <p>{item.supplierName ? item.supplierName : 'No supplier saved'}</p>
                         </div>
                       </td>
@@ -237,8 +238,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
                       <td className="px-4 py-5 align-top">
                         <p className="font-black text-[var(--text)]">
-                          {money(item.sellingPrice)}
+                          Retail: {money(item.sellingPrice)}
                         </p>
+                        <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                          Wholesale: {Number(item.wholesalePrice) > 0 ? money(item.wholesalePrice) : 'Not set'}
+                        </p>
+                        {Number(item.wholesalePrice) > 0 ? (
+                          <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                            From {item.wholesaleMinQuantity} pieces
+                          </p>
+                        ) : null}
                         <p className="mt-1 text-xs font-bold text-[var(--muted)]">
                           Bought: {money(item.buyingPrice)}
                         </p>
