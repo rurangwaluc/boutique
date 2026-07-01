@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --primary: #F05A9D;
+  --primary-strong: #B83272;
+  --primary-soft: #FDE7F2;
+  --secondary: #F2C94C;
+  --background: #FAFAFC;
+  --surface: #F7F4F8;
+  --card: #FFFFFF;
+  --text: #222222;
+  --muted: #6B7280;
+  --border: #E7E2E8;
+  --success: #5F8A63;
+  --danger: #E85D5D;
+}
+
+.dark {
+  --primary: #FF6FB2;
+  --primary-strong: #FFB4D8;
+  --primary-soft: rgba(255, 111, 178, 0.14);
+  --secondary: #FFD45A;
+  --background: #161616;
+  --surface: #1D1D1D;
+  --card: #222222;
+  --text: #F5F5F5;
+  --muted: #A3A3A3;
+  --border: #343434;
+  --success: #79C27D;
+  --danger: #FF7B7B;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--background);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--background);
+  color: var(--text);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.auth-shell {
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 16%, transparent), transparent 30rem),
+    var(--background);
+}
+
+.business-card {
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 18px 46px rgba(34, 34, 34, 0.08);
+}
+
+.dark .business-card {
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+}
