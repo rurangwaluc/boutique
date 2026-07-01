@@ -13,7 +13,7 @@ export function ThemeToggle() {
         const isDark = document.documentElement.classList.contains('dark');
         setTheme(isDark ? 'light' : 'dark');
       }}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-sky-500 dark:hover:text-sky-300"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--primary)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]"
       aria-label="Toggle theme"
       title="Toggle theme"
     >

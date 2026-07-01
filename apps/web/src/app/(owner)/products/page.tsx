@@ -162,7 +162,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
           <Link
             href="/products/new"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
           >
             <Plus className="h-4 w-4" />
             Add product
@@ -197,8 +197,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               href={filter.href}
               className={
                 filter.active
-                  ? 'inline-flex h-9 items-center justify-center rounded-lg border border-sky-300 bg-sky-50 px-4 text-xs font-black text-sky-800 dark:border-sky-500 dark:bg-sky-500 dark:text-white'
-                  : 'inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-black text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200'
+                  ? 'inline-flex h-9 items-center justify-center rounded-lg border border-[var(--primary)] bg-[var(--primary-soft)] px-4 text-xs font-black text-[var(--primary-strong)] dark:border-[var(--primary)] dark:bg-[var(--primary)] dark:text-white'
+                  : 'inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-black text-slate-700 transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]'
               }
             >
               {filter.label}
@@ -213,10 +213,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               name="q"
               defaultValue={q}
               placeholder="Search name, category, or supplier"
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
             />
           </div>
-          <button className="h-11 rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200">
+          <button className="h-11 rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]">
             Search
           </button>
         </form>
@@ -236,7 +236,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </p>
             <Link
               href="/products/new"
-              className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
+              className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
             >
               <Plus className="h-4 w-4" />
               Add product
@@ -296,7 +296,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         <div className="flex justify-end gap-2">
                           <Link
                             href={`/products/${item.id}/edit`}
-                            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+                            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
                           >
                             <Edit className="h-3.5 w-3.5" />
                             Edit
@@ -370,7 +370,7 @@ Quantity
                   <div className="mt-4 grid grid-cols-2 gap-2">
                     <Link
                       href={`/products/${item.id}/edit`}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
                     >
                       <Edit className="h-3.5 w-3.5" />
                       Edit
@@ -392,7 +392,7 @@ Quantity
             {hasMore ? (
               <Link
                 href={buildLoadMoreHref(q, take + PAGE_SIZE)}
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
               >
                 Load more
               </Link>

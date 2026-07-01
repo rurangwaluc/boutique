@@ -9,7 +9,7 @@ export function ComingSoonPage({ title, description, nextStep }: ComingSoonPageP
   return (
     <section className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
       <div className="max-w-2xl">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-700 dark:text-sky-300">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--primary)] dark:text-[var(--primary)]">
           Coming next
         </p>
         <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-950 dark:text-white">

@@ -195,15 +195,15 @@ export function SaleForm({ items, customers }: SaleFormProps) {
               }}
               className={
                 customerMode === option.value
-                  ? 'rounded-lg border border-sky-300 bg-sky-500 px-4 py-3 text-left text-sm font-black text-white shadow-sm transition hover:border-sky-200 hover:bg-sky-400 dark:border-sky-300 dark:bg-sky-500 dark:text-white dark:hover:border-sky-200 dark:hover:bg-sky-400'
-                  : 'rounded-lg border border-slate-200 bg-white px-4 py-3 text-left text-sm font-black text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200'
+                  ? 'rounded-lg border border-[var(--primary)] bg-[var(--primary)] px-4 py-3 text-left text-sm font-black text-white shadow-sm transition hover:border-[var(--primary-strong)] hover:bg-[var(--primary-strong)] dark:border-[var(--primary)] dark:bg-[var(--primary)] dark:text-white dark:hover:border-[var(--primary-strong)] dark:hover:bg-[var(--primary-strong)]'
+                  : 'rounded-lg border border-slate-200 bg-white px-4 py-3 text-left text-sm font-black text-slate-700 transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]'
               }
             >
               <span className="block">{option.label}</span>
               <span
                 className={
                   customerMode === option.value
-                    ? 'mt-1 block text-xs font-bold text-sky-100'
+                    ? 'mt-1 block text-xs font-bold text-[var(--primary-soft)]'
                     : 'mt-1 block text-xs font-bold text-slate-500 dark:text-slate-400'
                 }
               >
@@ -229,7 +229,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
                   setIsCustomerSearchOpen(true);
                 }}
                 placeholder="Type customer name or phone"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-black text-slate-900 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-black text-slate-900 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
               />
             </div>
 
@@ -283,7 +283,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
                 id="newCustomerName"
                 name="newCustomerName"
                 placeholder="Example: Jean Claude"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
               />
             </div>
 
@@ -295,7 +295,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
                 id="newCustomerPhone"
                 name="newCustomerPhone"
                 placeholder="Optional"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
               />
             </div>
           </div>
@@ -314,7 +314,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
           <button
             type="button"
             onClick={addRow}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:text-[var(--primary)] dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
           >
             <Plus className="h-4 w-4" />
             Add line
@@ -354,7 +354,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
                         setOpenRowIndex(index);
                       }}
                       placeholder="Type product name"
-                      className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-black text-slate-900 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+                      className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-black text-slate-900 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
                     />
                   </div>
 
@@ -414,7 +414,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
                         quantity: Math.max(1, Number(event.target.value || 1)),
                       })
                     }
-                    className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-900 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+                    className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-900 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
                   />
                   {isProduct ? (
                     <p className="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -438,7 +438,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
                         })
                       }
                       placeholder="Enter price"
-                      className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-900 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+                      className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-900 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
                     />
                   ) : (
                     <div className="flex h-11 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-black text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
@@ -486,7 +486,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
               onChange={(event) =>
                 setPaymentMethod(event.target.value as 'CASH' | 'MOBILE_MONEY' | 'BANK' | 'CARD')
               }
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-950 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-sky-400 dark:focus:ring-sky-950"
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
             >
               <option value="CASH">Cash</option>
               <option value="MOBILE_MONEY">Mobile money</option>
@@ -505,7 +505,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
               inputMode="decimal"
               value={paidAmount}
               onChange={(event) => setPaidAmount(event.target.value)}
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
             />
           </div>
 
@@ -518,7 +518,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
               name="notes"
               rows={4}
               placeholder="Optional"
-              className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+              className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
             />
           </div>
         </div>
@@ -558,7 +558,7 @@ export function SaleForm({ items, customers }: SaleFormProps) {
           <button
             type="submit"
             disabled={pending}
-            className="mt-5 h-11 w-full rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-5 h-11 w-full rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {pending ? 'Saving sale...' : 'Save sale'}
           </button>

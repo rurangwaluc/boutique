@@ -33,7 +33,7 @@ export default async function ReceiveStockPage({ searchParams }: ReceiveStockPag
       <div className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-700 dark:text-sky-300">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--primary)] dark:text-[var(--primary)]">
               Stock
             </p>
             <h2 className="mt-2 text-xl font-black tracking-tight text-slate-950 dark:text-white">
@@ -46,7 +46,7 @@ export default async function ReceiveStockPage({ searchParams }: ReceiveStockPag
 
           <Link
             href="/stock"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to stock

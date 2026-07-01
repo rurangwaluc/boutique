@@ -151,7 +151,7 @@ export default async function ExpensesPage({
                 name="name"
                 required
                 placeholder="Example: Rent, transport, electricity"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
               />
             </div>
 
@@ -165,7 +165,7 @@ export default async function ExpensesPage({
                 required
                 defaultValue="Utilities"
                 placeholder="Example: Rent"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
               />
             </div>
 
@@ -180,7 +180,7 @@ export default async function ExpensesPage({
                   inputMode="decimal"
                   required
                   placeholder="Example: 5000"
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
                 />
               </div>
 
@@ -192,7 +192,7 @@ export default async function ExpensesPage({
                   id="expenseDate"
                   name="expenseDate"
                   type="date"
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-sky-400 dark:focus:ring-sky-950"
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
                 />
               </div>
             </div>
@@ -204,7 +204,7 @@ export default async function ExpensesPage({
               <select
                 id="paymentMethod"
                 name="paymentMethod"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-950 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-sky-400 dark:focus:ring-sky-950"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
               >
                 <option value="CASH">Cash</option>
                 <option value="MOBILE_MONEY">Mobile money</option>
@@ -222,7 +222,7 @@ export default async function ExpensesPage({
                 name="notes"
                 rows={3}
                 placeholder="Optional"
-                className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+                className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
               />
             </div>
           </div>
@@ -239,7 +239,7 @@ export default async function ExpensesPage({
             </div>
           ) : null}
 
-          <button className="mt-5 h-11 w-full rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600">
+          <button className="mt-5 h-11 w-full rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]">
             Save expense
           </button>
         </form>
@@ -253,10 +253,10 @@ export default async function ExpensesPage({
                   name="q"
                   defaultValue={q}
                   placeholder="Search expense name, category, or notes"
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
                 />
               </div>
-              <button className="h-11 rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200">
+              <button className="h-11 rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]">
                 Search
               </button>
             </form>
@@ -356,7 +356,7 @@ export default async function ExpensesPage({
                 {hasMore ? (
                   <Link
                     href={buildLoadMoreHref(q, take + PAGE_SIZE)}
-                    className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
                   >
                     Load more
                   </Link>

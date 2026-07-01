@@ -30,7 +30,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             name="businessName"
             defaultValue={settings.businessName}
             required
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
 
@@ -43,7 +43,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             name="ownerName"
             defaultValue={settings.ownerName}
             required
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
 
@@ -56,7 +56,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             name="phone"
             defaultValue={settings.phone}
             placeholder="+250..."
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
 
@@ -84,7 +84,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             min="1"
             defaultValue={settings.lowStockAlertQuantity}
             required
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
 
@@ -99,7 +99,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             min="1"
             defaultValue={settings.expiryAlertDays}
             required
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
       </div>
@@ -113,7 +113,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
           name="address"
           defaultValue={settings.address}
           rows={4}
-          className="w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+          className="w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
         />
       </div>
 
@@ -133,7 +133,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         <button
           type="submit"
           disabled={pending}
-          className="h-11 w-full rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+          className="h-11 w-full rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
         >
           {pending ? 'Saving...' : 'Save settings'}
         </button>

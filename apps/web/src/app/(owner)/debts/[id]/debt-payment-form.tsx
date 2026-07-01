@@ -37,7 +37,7 @@ export function DebtPaymentForm({ saleId, balanceAmount }: DebtPaymentFormProps)
           name="amount"
           inputMode="decimal"
           placeholder="Example: 500"
-          className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+          className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
         />
       </div>
 
@@ -48,7 +48,7 @@ export function DebtPaymentForm({ saleId, balanceAmount }: DebtPaymentFormProps)
         <select
           id="paymentMethod"
           name="paymentMethod"
-          className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+          className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-black text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
         >
           <option value="CASH">Cash</option>
           <option value="MOBILE_MONEY">Mobile money</option>
@@ -66,7 +66,7 @@ export function DebtPaymentForm({ saleId, balanceAmount }: DebtPaymentFormProps)
           name="notes"
           rows={3}
           placeholder="Optional"
-          className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+          className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
         />
       </div>
 
@@ -85,7 +85,7 @@ export function DebtPaymentForm({ saleId, balanceAmount }: DebtPaymentFormProps)
       <button
         type="submit"
         disabled={pending}
-        className="h-11 w-full rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70"
+        className="h-11 w-full rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-70"
       >
         {pending ? 'Saving...' : 'Save payment'}
       </button>

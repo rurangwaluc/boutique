@@ -76,7 +76,7 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
 
           <Link
             href="/sales/new"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
           >
             <Plus className="h-4 w-4" />
             New sale
@@ -113,7 +113,7 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
           </p>
           <Link
             href="/sales/new"
-            className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600"
+            className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
           >
             <Plus className="h-4 w-4" />
             New sale
@@ -272,7 +272,7 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
             {hasMore ? (
               <Link
                 href={buildLoadMoreHref(take + PAGE_SIZE)}
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
               >
                 Load more
               </Link>

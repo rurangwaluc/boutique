@@ -101,7 +101,7 @@ export default async function DashboardPage() {
     {
       label: 'Low stock products',
       value: lowStockProducts.length,
-      className: 'text-sky-300',
+      className: 'text-[var(--primary)]',
     },
     {
       label: 'Expiring soon',
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
                   </p>
                 </div>
 
-                <Icon className="h-5 w-5 text-sky-500 dark:text-sky-300" />
+                <Icon className="h-5 w-5 text-[var(--primary)] dark:text-[var(--primary)]" />
               </div>
 
               <p className="mt-8 text-3xl font-black tracking-tight text-slate-950 dark:text-white">

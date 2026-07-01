@@ -77,7 +77,7 @@ export function ReceiveStockForm({ products, error }: ReceiveStockFormProps) {
               }}
               onFocus={() => setIsProductSearchOpen(true)}
               placeholder="Search product name, category, or supplier"
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950"
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
             />
 
             {isProductSearchOpen ? (
@@ -97,7 +97,7 @@ export function ReceiveStockForm({ products, error }: ReceiveStockFormProps) {
                           setProductSearch(product.name);
                           setIsProductSearchOpen(false);
                         }}
-                        className="grid w-full gap-1 rounded-lg px-3 py-3 text-left transition hover:bg-sky-50 dark:hover:bg-slate-800"
+                        className="grid w-full gap-1 rounded-lg px-3 py-3 text-left transition hover:bg-[var(--primary-soft)] dark:hover:bg-slate-800"
                       >
                         <span className="font-black text-slate-950 dark:text-white">
                           {product.name}
@@ -140,7 +140,7 @@ export function ReceiveStockForm({ products, error }: ReceiveStockFormProps) {
             min="1"
             required
             placeholder="Example: 50"
-            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
 
@@ -154,7 +154,7 @@ export function ReceiveStockForm({ products, error }: ReceiveStockFormProps) {
             inputMode="decimal"
             required
             placeholder="Example: 800"
-            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
 
@@ -166,7 +166,7 @@ export function ReceiveStockForm({ products, error }: ReceiveStockFormProps) {
             id="supplierName"
             name="supplierName"
             placeholder="Supplier name"
-            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
 
@@ -178,7 +178,7 @@ export function ReceiveStockForm({ products, error }: ReceiveStockFormProps) {
             id="expiryDate"
             name="expiryDate"
             type="date"
-            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-sky-950"
+            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
 
@@ -191,7 +191,7 @@ export function ReceiveStockForm({ products, error }: ReceiveStockFormProps) {
             name="notes"
             rows={3}
             placeholder="Optional"
-            className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-sky-950"
+            className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-[var(--primary-soft)]"
           />
         </div>
       </div>
@@ -205,13 +205,13 @@ export function ReceiveStockForm({ products, error }: ReceiveStockFormProps) {
       <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto]">
         <Link
           href="/stock"
-          className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500 dark:hover:bg-slate-800 dark:hover:text-sky-200"
+          className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
         >
           Cancel
         </Link>
         <button
           disabled={!selectedProductId}
-          className="h-11 rounded-lg bg-sky-500 px-5 text-sm font-black text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-11 rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           Save stock
         </button>
