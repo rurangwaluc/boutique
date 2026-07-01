@@ -1,3 +1,5 @@
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -13,12 +15,12 @@ export default async function LoginPage() {
   return (
     <main className="auth-shell min-h-screen px-4 py-5 sm:px-6">
       <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
-        <header className="flex items-center justify-between border-b border-[var(--border)] pb-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--primary)] text-sm font-black text-white shadow-sm">
+        <header className="flex items-center justify-between gap-3 border-b border-[var(--border)] pb-5">
+          <Link href="/" className="flex min-w-0 items-center gap-3 text-[var(--text)] no-underline">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--primary)] text-sm font-black text-white shadow-sm">
               LE
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--text)]">
                 La Elegant Boutique
               </p>
@@ -26,9 +28,27 @@ export default async function LoginPage() {
                 Owner and employee access
               </p>
             </div>
-          </div>
+          </Link>
 
-          <ThemeToggle />
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/"
+              className="hidden h-11 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] sm:inline-flex"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Home
+            </Link>
+
+            <Link
+              href="/"
+              aria-label="Back to home"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] sm:hidden"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+
+            <ThemeToggle />
+          </div>
         </header>
 
         <section className="flex flex-1 items-center justify-center py-10">

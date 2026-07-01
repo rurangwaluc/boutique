@@ -17,8 +17,8 @@ const systemAreas = [
   },
 ];
 
-const developerPhoneDisplay = '+250 785 878 30';
-const developerPhoneHref = 'tel:+25078587830';
+const developerPhoneDisplay = '+250 785 587 830';
+const developerPhoneHref = 'tel:+250785587830';
 
 export default function HomePage() {
   const year = new Date().getFullYear();
