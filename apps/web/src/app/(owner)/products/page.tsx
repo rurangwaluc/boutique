@@ -9,16 +9,18 @@ type ProductsPageProps = {
   searchParams?: Promise<{
     q?: string;
     take?: string;
+    mobileTake?: string;
   }>;
 };
 
-const PAGE_SIZE = 10;
+const DESKTOP_PAGE_SIZE = 8;
+const MOBILE_PAGE_SIZE = 4;
 
 function money(value: string | number) {
   return `RWF ${Number(value).toLocaleString('en-US')}`;
 }
 
-function buildLoadMoreHref(q: string, nextTake: number) {
+function buildLoadMoreHref(q: string, nextTake: number, nextMobileTake: number) {
   const params = new URLSearchParams();
 
   if (q) {
@@ -26,6 +28,7 @@ function buildLoadMoreHref(q: string, nextTake: number) {
   }
 
   params.set('take', String(nextTake));
+  params.set('mobileTake', String(nextMobileTake));
 
   return `/products?${params.toString()}`;
 }
@@ -65,7 +68,11 @@ function productDetails(item: {
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = await searchParams;
   const q = params?.q?.trim() || '';
-  const take = Math.max(PAGE_SIZE, Number(params?.take || PAGE_SIZE));
+  const take = Math.max(DESKTOP_PAGE_SIZE, Number(params?.take || DESKTOP_PAGE_SIZE));
+  const mobileTake = Math.max(
+    MOBILE_PAGE_SIZE,
+    Number(params?.mobileTake || MOBILE_PAGE_SIZE),
+  );
 
   const filteredItems = await db
     .select()
@@ -88,15 +95,20 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     )
     .orderBy(desc(products.createdAt));
 
-  const visibleItems = filteredItems.slice(0, take);
-  const hasMore = filteredItems.length > visibleItems.length;
+  const desktopItems = filteredItems.slice(0, take);
+  const mobileItems = filteredItems.slice(0, mobileTake);
+  const desktopHasMore = filteredItems.length > desktopItems.length;
+  const mobileHasMore = filteredItems.length > mobileItems.length;
 
   const productCount = filteredItems.length;
   const lowStockCount = filteredItems.filter((item) => item.quantity <= item.minQuantity).length;
-  const stockValue = filteredItems.reduce(
-    (sum, item) => sum + Number(item.sellingPrice) * item.quantity,
-    0,
-  );
+  const stockValue = filteredItems.reduce((sum, item) => {
+    const retail = Number(item.sellingPrice);
+    const wholesale = Number(item.wholesalePrice);
+    const price = retail > 0 ? retail : wholesale;
+
+    return sum + price * item.quantity;
+  }, 0);
   const wholesaleReady = filteredItems.filter(
     (item) => Number(item.wholesalePrice) > 0 && item.wholesaleMinQuantity > 0,
   ).length;
@@ -105,7 +117,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     { label: 'Products', value: productCount, helper: 'Items in the shop' },
     { label: 'Low stock', value: lowStockCount, helper: 'Check these first' },
     { label: 'Wholesale', value: wholesaleReady, helper: 'Items with wholesale price' },
-    { label: 'Stock value', value: money(stockValue), helper: 'Retail value' },
+    { label: 'Stock value', value: money(stockValue), helper: 'Available value' },
   ];
 
   return (
@@ -162,7 +174,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </div>
 
           <form className="grid gap-2 sm:grid-cols-[1fr_auto] lg:min-w-[560px]">
-            <div className="relative">
+            <input type="hidden" name="take" value={take} />
+            <input type="hidden" name="mobileTake" value={mobileTake} />
+
+            <div className="relative min-w-0">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
               <input
                 name="q"
@@ -179,7 +194,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </div>
       </section>
 
-      {visibleItems.length === 0 ? (
+      {filteredItems.length === 0 ? (
         <section className="business-card rounded-3xl p-6 text-center sm:p-10">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--primary-soft)] text-[var(--primary)]">
             <PackagePlus className="h-5 w-5" />
@@ -203,81 +218,75 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       ) : (
         <>
           <div className="hidden overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm lg:block">
-            <table className="w-full border-collapse text-left text-sm">
+            <table className="w-full table-fixed border-collapse text-left text-sm">
               <thead className="border-b border-[var(--border)] bg-[var(--surface)] text-[11px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
                 <tr>
-                  <th className="px-4 py-3">Product</th>
-                  <th className="px-4 py-3">Size / color</th>
-                  <th className="px-4 py-3">Retail</th>
-                  <th className="px-4 py-3">Wholesale</th>
-                  <th className="px-4 py-3">Stock</th>
-                  <th className="px-4 py-3 text-right">Action</th>
+                  <th className="w-[26%] px-4 py-3">Product</th>
+                  <th className="w-[17%] px-4 py-3">Size / color</th>
+                  <th className="w-[18%] px-4 py-3">Retail</th>
+                  <th className="w-[18%] px-4 py-3">Wholesale</th>
+                  <th className="w-[11%] px-4 py-3">Stock</th>
+                  <th className="w-[10%] px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-[var(--border)]">
-                {visibleItems.map((item) => {
+                {desktopItems.map((item) => {
                   const stockLabel = getStockLabel(item.quantity, item.minQuantity);
+                  const hasRetail = Number(item.sellingPrice) > 0;
+                  const hasWholesale = Number(item.wholesalePrice) > 0;
+                  const hasBuyingPrice = Number(item.buyingPrice) > 0;
 
                   return (
                     <tr key={item.id} className="transition hover:bg-[var(--surface)]">
                       <td className="px-4 py-5 align-top">
-                        <p className="font-black text-[var(--text)]">{item.name}</p>
-                        <div className="mt-1 space-y-1 text-xs font-bold text-[var(--muted)]">
-                          <p>{item.category}</p>
-                          <p>{productDetails(item) || 'Size/color not saved'}</p>
-                          <p>{item.supplierName ? item.supplierName : 'No supplier saved'}</p>
+                        <p className="break-words font-black text-[var(--text)]">{item.name}</p>
+                        <div className="mt-1 space-y-1 text-xs font-bold leading-5 text-[var(--muted)]">
+                          <p className="break-words">{item.category}</p>
+                          <p className="break-words">{productDetails(item) || 'Size/color not saved'}</p>
+                          <p className="break-words">{item.supplierName || 'No supplier saved'}</p>
                         </div>
                       </td>
 
                       <td className="px-4 py-5 align-top">
-                        <p className="font-black text-[var(--text)]">
+                        <p className="break-words font-black leading-6 text-[var(--text)]">
                           {productDetails(item) || 'Not saved'}
                         </p>
                       </td>
 
                       <td className="px-4 py-5 align-top">
-                        {Number(item.sellingPrice) > 0 ? (
-                          <p className="font-black text-[var(--text)]">
-                            Retail: {money(item.sellingPrice)}
+                        {hasRetail ? (
+                          <p className="break-words font-black text-[var(--text)]">
+                            {money(item.sellingPrice)}
                           </p>
-                        ) : null}
+                        ) : (
+                          <p className="text-xs font-bold text-[var(--muted)]">Wholesale only</p>
+                        )}
 
-                        {Number(item.wholesalePrice) > 0 ? (
-                          <>
-                            <p className={Number(item.sellingPrice) > 0 ? 'mt-1 text-xs font-bold text-[var(--muted)]' : 'font-black text-[var(--text)]'}>
-                              Wholesale: {money(item.wholesalePrice)}
-                            </p>
-                            <p className="mt-1 text-xs font-bold text-[var(--muted)]">
-                              From {item.wholesaleMinQuantity} pieces
-                            </p>
-                          </>
-                        ) : null}
-
-                        {Number(item.buyingPrice) > 0 ? (
-                          <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                        {hasBuyingPrice ? (
+                          <p className="mt-1 break-words text-xs font-bold leading-5 text-[var(--muted)]">
                             Bought: {money(item.buyingPrice)}
                           </p>
                         ) : null}
                       </td>
 
                       <td className="px-4 py-5 align-top">
-                        {Number(item.wholesalePrice) > 0 ? (
+                        {hasWholesale ? (
                           <>
-                            <p className="font-black text-[var(--text)]">
+                            <p className="break-words font-black text-[var(--text)]">
                               {money(item.wholesalePrice)}
                             </p>
-                            <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                            <p className="mt-1 break-words text-xs font-bold leading-5 text-[var(--muted)]">
                               From {item.wholesaleMinQuantity} pieces
                             </p>
                           </>
                         ) : (
-                          <p className="text-xs font-bold text-[var(--muted)]">Not set</p>
+                          <p className="text-xs font-bold text-[var(--muted)]">Retail only</p>
                         )}
                       </td>
 
                       <td className="px-4 py-5 align-top">
-                        <p className="font-black text-[var(--text)]">
+                        <p className="break-words font-black text-[var(--text)]">
                           {item.quantity} {item.unit}
                         </p>
                         <span
@@ -308,18 +317,20 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </div>
 
           <div className="space-y-3 lg:hidden">
-            {visibleItems.map((item) => {
+            {mobileItems.map((item) => {
               const stockLabel = getStockLabel(item.quantity, item.minQuantity);
+              const hasRetail = Number(item.sellingPrice) > 0;
+              const hasWholesale = Number(item.wholesalePrice) > 0;
 
               return (
                 <article key={item.id} className="business-card rounded-3xl p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-black text-[var(--text)]">{item.name}</p>
-                      <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                      <p className="break-words font-black text-[var(--text)]">{item.name}</p>
+                      <p className="mt-1 break-words text-xs font-bold leading-5 text-[var(--muted)]">
                         {item.category}
                       </p>
-                      <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                      <p className="mt-1 break-words text-xs font-bold leading-5 text-[var(--muted)]">
                         {productDetails(item) || 'Size/color not saved'}
                       </p>
                     </div>
@@ -332,34 +343,36 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
-                      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
-                        Retail
-                      </p>
-                      <p className="mt-1 font-black text-[var(--text)]">
-                        {Number(item.sellingPrice) > 0 ? money(item.sellingPrice) : 'Not set'}
-                      </p>
-                    </div>
+                    {hasRetail ? (
+                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
+                          Retail
+                        </p>
+                        <p className="mt-1 break-words font-black text-[var(--text)]">
+                          {money(item.sellingPrice)}
+                        </p>
+                      </div>
+                    ) : null}
 
-                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
-                      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
-                        Wholesale
-                      </p>
-                      <p className="mt-1 font-black text-[var(--text)]">
-                        {Number(item.wholesalePrice) > 0 ? money(item.wholesalePrice) : 'Not set'}
-                      </p>
-                      {Number(item.wholesalePrice) > 0 ? (
-                        <p className="mt-1 text-[11px] font-bold text-[var(--muted)]">
+                    {hasWholesale ? (
+                      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
+                          Wholesale
+                        </p>
+                        <p className="mt-1 break-words font-black text-[var(--text)]">
+                          {money(item.wholesalePrice)}
+                        </p>
+                        <p className="mt-1 break-words text-[11px] font-bold leading-4 text-[var(--muted)]">
                           From {item.wholesaleMinQuantity} pieces
                         </p>
-                      ) : null}
-                    </div>
+                      </div>
+                    ) : null}
 
                     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
                       <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
                         Stock
                       </p>
-                      <p className="mt-1 font-black text-[var(--text)]">
+                      <p className="mt-1 break-words font-black text-[var(--text)]">
                         {item.quantity} {item.unit}
                       </p>
                     </div>
@@ -368,7 +381,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
                         Supplier
                       </p>
-                      <p className="mt-1 truncate font-black text-[var(--text)]">
+                      <p className="mt-1 break-words font-black leading-5 text-[var(--text)]">
                         {item.supplierName || 'Not saved'}
                       </p>
                     </div>
@@ -393,13 +406,20 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </div>
 
           <div className="business-card rounded-3xl p-4 text-center">
-            <p className="text-xs font-bold text-[var(--muted)]">
-              Showing {visibleItems.length} of {filteredItems.length}
+            <p className="hidden text-xs font-bold text-[var(--muted)] lg:block">
+              Showing {desktopItems.length} of {filteredItems.length}
+            </p>
+            <p className="text-xs font-bold text-[var(--muted)] lg:hidden">
+              Showing {mobileItems.length} of {filteredItems.length}
             </p>
 
-            {hasMore ? (
+            {desktopHasMore || mobileHasMore ? (
               <Link
-                href={buildLoadMoreHref(q, take + PAGE_SIZE)}
+                href={buildLoadMoreHref(
+                  q,
+                  desktopHasMore ? take + DESKTOP_PAGE_SIZE : take,
+                  mobileHasMore ? mobileTake + MOBILE_PAGE_SIZE : mobileTake,
+                )}
                 className="mt-3 inline-flex h-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]"
               >
                 Load more
