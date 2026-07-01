@@ -20,16 +20,18 @@ const wholeNumberSchema = z
 
 export const productFormSchema = z.object({
   itemType: z.literal('PRODUCT'),
-  name: z.string().trim().min(2, 'Name is required.').max(180),
-  category: z.string().trim().min(2, 'Category is required.').max(120),
-  unit: z.string().trim().min(1, 'Unit is required.').max(40),
-  batchNumber: z.string().trim().max(80).optional(),
+  name: z.string().trim().min(2, 'Product name is required.').max(180),
+  category: z.string().trim().min(2, 'Choose a category.').max(120),
+  customerType: z.string().trim().min(2, 'Choose who this is for.').max(40),
+  size: z.string().trim().max(60).optional(),
+  color: z.string().trim().max(80).optional(),
   supplierName: z.string().trim().max(160).optional(),
   buyingPrice: moneySchema,
-  sellingPrice: optionalMoneySchema,
+  sellingPrice: moneySchema,
+  wholesalePrice: optionalMoneySchema,
+  wholesaleMinQuantity: wholeNumberSchema,
   quantity: wholeNumberSchema,
   minQuantity: wholeNumberSchema,
-  expiryDate: z.string().trim().optional(),
   notes: z.string().trim().max(1000).optional(),
 });
 

@@ -54,6 +54,14 @@ function getStockLabel(quantity: number, minQuantity: number) {
   };
 }
 
+function productDetails(item: {
+  customerType: string;
+  size: string | null;
+  color: string | null;
+}) {
+  return [item.customerType, item.size, item.color].filter(Boolean).join(' · ');
+}
+
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = await searchParams;
   const q = params?.q?.trim() || '';
@@ -70,6 +78,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           ? or(
               ilike(products.name, `%${q}%`),
               ilike(products.category, `%${q}%`),
+              ilike(products.customerType, `%${q}%`),
+              ilike(products.size, `%${q}%`),
+              ilike(products.color, `%${q}%`),
               ilike(products.supplierName, `%${q}%`),
             )
           : undefined,
@@ -86,10 +97,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     (sum, item) => sum + Number(item.sellingPrice) * item.quantity,
     0,
   );
+  const wholesaleReady = filteredItems.filter(
+    (item) => Number(item.wholesalePrice) > 0 && item.wholesaleMinQuantity > 0,
+  ).length;
 
   const summary = [
     { label: 'Products', value: productCount, helper: 'Items in the shop' },
     { label: 'Low stock', value: lowStockCount, helper: 'Check these first' },
+    { label: 'Wholesale', value: wholesaleReady, helper: 'Items with wholesale price' },
     { label: 'Stock value', value: money(stockValue), helper: 'Retail value' },
   ];
 
@@ -105,7 +120,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               Shop items.
             </h2>
             <p className="mt-3 text-sm font-bold leading-6 text-[var(--muted)]">
-              Clothes, shoes, handbags, accessories, prices, and stock.
+              Clothes, shoes, handbags, accessories, retail prices, wholesale prices, and stock.
             </p>
           </div>
 
@@ -119,7 +134,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {summary.map((item) => (
           <article key={item.label} className="business-card rounded-3xl p-4 sm:p-5">
             <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
@@ -146,13 +161,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </h3>
           </div>
 
-          <form className="grid gap-2 sm:grid-cols-[1fr_auto] lg:min-w-[520px]">
+          <form className="grid gap-2 sm:grid-cols-[1fr_auto] lg:min-w-[560px]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
               <input
                 name="q"
                 defaultValue={q}
-                placeholder="Search product, category, or supplier"
+                placeholder="Search name, category, size, color, or supplier"
                 className="h-11 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] pl-10 pr-3 text-sm font-bold text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)]"
               />
             </div>
@@ -187,12 +202,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </section>
       ) : (
         <>
-          <div className="hidden overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm md:block">
+          <div className="hidden overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm lg:block">
             <table className="w-full border-collapse text-left text-sm">
               <thead className="border-b border-[var(--border)] bg-[var(--surface)] text-[11px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
                 <tr>
                   <th className="px-4 py-3">Product</th>
-                  <th className="px-4 py-3">Price</th>
+                  <th className="px-4 py-3">Size / color</th>
+                  <th className="px-4 py-3">Retail</th>
+                  <th className="px-4 py-3">Wholesale</th>
                   <th className="px-4 py-3">Stock</th>
                   <th className="px-4 py-3 text-right">Action</th>
                 </tr>
@@ -214,11 +231,32 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
                       <td className="px-4 py-5 align-top">
                         <p className="font-black text-[var(--text)]">
+                          {productDetails(item) || 'Not saved'}
+                        </p>
+                      </td>
+
+                      <td className="px-4 py-5 align-top">
+                        <p className="font-black text-[var(--text)]">
                           {money(item.sellingPrice)}
                         </p>
                         <p className="mt-1 text-xs font-bold text-[var(--muted)]">
                           Bought: {money(item.buyingPrice)}
                         </p>
+                      </td>
+
+                      <td className="px-4 py-5 align-top">
+                        {Number(item.wholesalePrice) > 0 ? (
+                          <>
+                            <p className="font-black text-[var(--text)]">
+                              {money(item.wholesalePrice)}
+                            </p>
+                            <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                              From {item.wholesaleMinQuantity} pieces
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-xs font-bold text-[var(--muted)]">Not set</p>
+                        )}
                       </td>
 
                       <td className="px-4 py-5 align-top">
@@ -252,7 +290,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </table>
           </div>
 
-          <div className="space-y-3 md:hidden">
+          <div className="space-y-3 lg:hidden">
             {visibleItems.map((item) => {
               const stockLabel = getStockLabel(item.quantity, item.minQuantity);
 
@@ -263,6 +301,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       <p className="font-black text-[var(--text)]">{item.name}</p>
                       <p className="mt-1 text-xs font-bold text-[var(--muted)]">
                         {item.category}
+                      </p>
+                      <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                        {productDetails(item) || 'Size/color not saved'}
                       </p>
                     </div>
 
@@ -276,7 +317,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
                     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
                       <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
-                        Price
+                        Retail
                       </p>
                       <p className="mt-1 font-black text-[var(--text)]">
                         {money(item.sellingPrice)}
@@ -285,19 +326,24 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
                     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
                       <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
-                        Stock
+                        Wholesale
                       </p>
                       <p className="mt-1 font-black text-[var(--text)]">
-                        {item.quantity} {item.unit}
+                        {Number(item.wholesalePrice) > 0 ? money(item.wholesalePrice) : 'Not set'}
                       </p>
+                      {Number(item.wholesalePrice) > 0 ? (
+                        <p className="mt-1 text-[11px] font-bold text-[var(--muted)]">
+                          From {item.wholesaleMinQuantity} pieces
+                        </p>
+                      ) : null}
                     </div>
 
                     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
                       <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
-                        Bought
+                        Stock
                       </p>
                       <p className="mt-1 font-black text-[var(--text)]">
-                        {money(item.buyingPrice)}
+                        {item.quantity} {item.unit}
                       </p>
                     </div>
 

@@ -22,14 +22,16 @@ function getFormValues(formData: FormData) {
     itemType: 'PRODUCT',
     name: formData.get('name'),
     category: formData.get('category'),
-    unit: formData.get('unit'),
-    batchNumber: undefined,
+    customerType: formData.get('customerType'),
+    size: formData.get('size') || undefined,
+    color: formData.get('color') || undefined,
     supplierName: formData.get('supplierName') || undefined,
     buyingPrice: formData.get('buyingPrice'),
-    sellingPrice: formData.get('sellingPrice') || undefined,
+    sellingPrice: formData.get('sellingPrice'),
+    wholesalePrice: formData.get('wholesalePrice') || undefined,
+    wholesaleMinQuantity: formData.get('wholesaleMinQuantity') || '0',
     quantity: formData.get('quantity'),
     minQuantity: formData.get('minQuantity'),
-    expiryDate: formData.get('expiryDate') || undefined,
     notes: formData.get('notes') || undefined,
   };
 }
@@ -52,14 +54,19 @@ export async function createProductAction(
     itemType: 'PRODUCT',
     name: parsed.data.name,
     category: parsed.data.category,
-    unit: parsed.data.unit,
+    customerType: parsed.data.customerType,
+    size: cleanOptional(parsed.data.size),
+    color: cleanOptional(parsed.data.color),
+    unit: 'piece',
     batchNumber: null,
     supplierName: cleanOptional(parsed.data.supplierName),
     buyingPrice: parsed.data.buyingPrice,
-    sellingPrice: parsed.data.sellingPrice || '0',
+    sellingPrice: parsed.data.sellingPrice,
+    wholesalePrice: parsed.data.wholesalePrice || '0',
+    wholesaleMinQuantity: Number(parsed.data.wholesaleMinQuantity),
     quantity: Number(parsed.data.quantity),
     minQuantity: Number(parsed.data.minQuantity),
-    expiryDate: cleanOptional(parsed.data.expiryDate),
+    expiryDate: null,
     notes: cleanOptional(parsed.data.notes),
     status: 'ACTIVE',
   });
@@ -67,6 +74,7 @@ export async function createProductAction(
   revalidatePath('/products');
   revalidatePath('/stock');
   revalidatePath('/sales/new');
+  revalidatePath('/dashboard');
   redirect('/products');
 }
 
@@ -91,14 +99,19 @@ export async function updateProductAction(
       itemType: 'PRODUCT',
       name: parsed.data.name,
       category: parsed.data.category,
-      unit: parsed.data.unit,
+      customerType: parsed.data.customerType,
+      size: cleanOptional(parsed.data.size),
+      color: cleanOptional(parsed.data.color),
+      unit: 'piece',
       batchNumber: null,
       supplierName: cleanOptional(parsed.data.supplierName),
       buyingPrice: parsed.data.buyingPrice,
-      sellingPrice: parsed.data.sellingPrice || '0',
+      sellingPrice: parsed.data.sellingPrice,
+      wholesalePrice: parsed.data.wholesalePrice || '0',
+      wholesaleMinQuantity: Number(parsed.data.wholesaleMinQuantity),
       quantity: Number(parsed.data.quantity),
       minQuantity: Number(parsed.data.minQuantity),
-      expiryDate: cleanOptional(parsed.data.expiryDate),
+      expiryDate: null,
       notes: cleanOptional(parsed.data.notes),
       updatedAt: new Date(),
     })
@@ -107,6 +120,7 @@ export async function updateProductAction(
   revalidatePath('/products');
   revalidatePath('/stock');
   revalidatePath('/sales/new');
+  revalidatePath('/dashboard');
   redirect('/products');
 }
 
@@ -129,4 +143,5 @@ export async function archiveProductAction(formData: FormData) {
 
   revalidatePath('/products');
   revalidatePath('/stock');
+  revalidatePath('/dashboard');
 }
