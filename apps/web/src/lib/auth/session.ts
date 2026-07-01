@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { db } from '@dispensary/db/client';
 import { sessions } from '@dispensary/db/schema';
 
-export const SESSION_COOKIE_NAME = 'dispensary_session';
+export const SESSION_COOKIE_NAME = 'la_elegant_session';
 const SESSION_DAYS = 7;
 
 export type AppUserRole = 'OWNER' | 'EMPLOYEE';
