@@ -237,20 +237,28 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       </td>
 
                       <td className="px-4 py-5 align-top">
-                        <p className="font-black text-[var(--text)]">
-                          Retail: {money(item.sellingPrice)}
-                        </p>
-                        <p className="mt-1 text-xs font-bold text-[var(--muted)]">
-                          Wholesale: {Number(item.wholesalePrice) > 0 ? money(item.wholesalePrice) : 'Not set'}
-                        </p>
-                        {Number(item.wholesalePrice) > 0 ? (
-                          <p className="mt-1 text-xs font-bold text-[var(--muted)]">
-                            From {item.wholesaleMinQuantity} pieces
+                        {Number(item.sellingPrice) > 0 ? (
+                          <p className="font-black text-[var(--text)]">
+                            Retail: {money(item.sellingPrice)}
                           </p>
                         ) : null}
-                        <p className="mt-1 text-xs font-bold text-[var(--muted)]">
-                          Bought: {money(item.buyingPrice)}
-                        </p>
+
+                        {Number(item.wholesalePrice) > 0 ? (
+                          <>
+                            <p className={Number(item.sellingPrice) > 0 ? 'mt-1 text-xs font-bold text-[var(--muted)]' : 'font-black text-[var(--text)]'}>
+                              Wholesale: {money(item.wholesalePrice)}
+                            </p>
+                            <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                              From {item.wholesaleMinQuantity} pieces
+                            </p>
+                          </>
+                        ) : null}
+
+                        {Number(item.buyingPrice) > 0 ? (
+                          <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                            Bought: {money(item.buyingPrice)}
+                          </p>
+                        ) : null}
                       </td>
 
                       <td className="px-4 py-5 align-top">
@@ -329,7 +337,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         Retail
                       </p>
                       <p className="mt-1 font-black text-[var(--text)]">
-                        {money(item.sellingPrice)}
+                        {Number(item.sellingPrice) > 0 ? money(item.sellingPrice) : 'Not set'}
                       </p>
                     </div>
 

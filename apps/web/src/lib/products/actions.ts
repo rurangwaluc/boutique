@@ -17,6 +17,11 @@ function cleanOptional(value: string | undefined) {
   return cleaned ? cleaned : null;
 }
 
+function cleanMoney(value: string | undefined) {
+  const cleaned = value?.trim();
+  return cleaned ? cleaned : '0';
+}
+
 function getFormValues(formData: FormData) {
   return {
     itemType: 'PRODUCT',
@@ -27,8 +32,8 @@ function getFormValues(formData: FormData) {
     color: formData.get('color') || undefined,
     unit: formData.get('unit'),
     supplierName: formData.get('supplierName') || undefined,
-    buyingPrice: formData.get('buyingPrice'),
-    sellingPrice: formData.get('sellingPrice'),
+    buyingPrice: formData.get('buyingPrice') || undefined,
+    sellingPrice: formData.get('sellingPrice') || undefined,
     wholesalePrice: formData.get('wholesalePrice') || undefined,
     wholesaleMinQuantity: formData.get('wholesaleMinQuantity') || '0',
     quantity: formData.get('quantity'),
@@ -61,9 +66,9 @@ export async function createProductAction(
     unit: parsed.data.unit,
     batchNumber: null,
     supplierName: cleanOptional(parsed.data.supplierName),
-    buyingPrice: parsed.data.buyingPrice,
-    sellingPrice: parsed.data.sellingPrice,
-    wholesalePrice: parsed.data.wholesalePrice || '0',
+    buyingPrice: cleanMoney(parsed.data.buyingPrice),
+    sellingPrice: cleanMoney(parsed.data.sellingPrice),
+    wholesalePrice: cleanMoney(parsed.data.wholesalePrice),
     wholesaleMinQuantity: Number(parsed.data.wholesaleMinQuantity),
     quantity: Number(parsed.data.quantity),
     minQuantity: Number(parsed.data.minQuantity),
@@ -106,9 +111,9 @@ export async function updateProductAction(
       unit: parsed.data.unit,
       batchNumber: null,
       supplierName: cleanOptional(parsed.data.supplierName),
-      buyingPrice: parsed.data.buyingPrice,
-      sellingPrice: parsed.data.sellingPrice,
-      wholesalePrice: parsed.data.wholesalePrice || '0',
+      buyingPrice: cleanMoney(parsed.data.buyingPrice),
+      sellingPrice: cleanMoney(parsed.data.sellingPrice),
+      wholesalePrice: cleanMoney(parsed.data.wholesalePrice),
       wholesaleMinQuantity: Number(parsed.data.wholesaleMinQuantity),
       quantity: Number(parsed.data.quantity),
       minQuantity: Number(parsed.data.minQuantity),

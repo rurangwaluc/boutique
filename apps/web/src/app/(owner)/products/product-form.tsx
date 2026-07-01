@@ -181,7 +181,7 @@ export function ProductForm({ product, backHref }: ProductFormProps) {
             How much does it sell for?
           </h3>
           <p className="mt-2 text-sm font-bold leading-6 text-[var(--muted)]">
-            Add retail price and wholesale price for customers buying many items.
+            Add retail price, wholesale price, or both.
           </p>
         </div>
 
@@ -194,9 +194,8 @@ export function ProductForm({ product, backHref }: ProductFormProps) {
               id="buyingPrice"
               name="buyingPrice"
               inputMode="decimal"
-              defaultValue={product?.buyingPrice || '0'}
-              placeholder="Example: 18000"
-              required
+              defaultValue={Number(product?.buyingPrice || '0') > 0 ? product?.buyingPrice : ''}
+              placeholder="Optional"
               className={inputClass}
             />
           </div>
@@ -209,9 +208,8 @@ export function ProductForm({ product, backHref }: ProductFormProps) {
               id="sellingPrice"
               name="sellingPrice"
               inputMode="decimal"
-              defaultValue={product?.sellingPrice || '0'}
-              placeholder="Example: 30000"
-              required
+              defaultValue={Number(product?.sellingPrice || '0') > 0 ? product?.sellingPrice : ''}
+              placeholder="Optional"
               className={inputClass}
             />
           </div>
@@ -243,6 +241,9 @@ export function ProductForm({ product, backHref }: ProductFormProps) {
               required
               className={inputClass}
             />
+            <p className="text-xs font-bold text-[var(--muted)]">
+              Only needed when wholesale price is added.
+            </p>
           </div>
         </div>
       </section>
