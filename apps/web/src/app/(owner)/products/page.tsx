@@ -413,14 +413,27 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               Showing {mobileItems.length} of {filteredItems.length}
             </p>
 
-            {desktopHasMore || mobileHasMore ? (
+            {desktopHasMore ? (
               <Link
                 href={buildLoadMoreHref(
                   q,
-                  desktopHasMore ? take + DESKTOP_PAGE_SIZE : take,
-                  mobileHasMore ? mobileTake + MOBILE_PAGE_SIZE : mobileTake,
+                  take + DESKTOP_PAGE_SIZE,
+                  mobileTake,
                 )}
-                className="mt-3 inline-flex h-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]"
+                className="mt-3 hidden h-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] lg:inline-flex"
+              >
+                Load more
+              </Link>
+            ) : null}
+
+            {mobileHasMore ? (
+              <Link
+                href={buildLoadMoreHref(
+                  q,
+                  take,
+                  mobileTake + MOBILE_PAGE_SIZE,
+                )}
+                className="mt-3 inline-flex h-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] lg:hidden"
               >
                 Load more
               </Link>
