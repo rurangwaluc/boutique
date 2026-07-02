@@ -1,24 +1,31 @@
 import Link from 'next/link';
 import { and, desc, eq, ilike, or } from 'drizzle-orm';
-import { Edit, Search } from 'lucide-react';
+import { Edit, PackagePlus, Plus, Search } from 'lucide-react';
 import { db } from '@dispensary/db/client';
-import { businessSettings, products, stockArrivals } from '@dispensary/db/schema';
+import { products, stockArrivals } from '@dispensary/db/schema';
 
 type StockPageProps = {
   searchParams?: Promise<{
     q?: string;
     status?: string;
     take?: string;
+    mobileTake?: string;
   }>;
 };
 
-const PAGE_SIZE = 10;
+const DESKTOP_PAGE_SIZE = 8;
+const MOBILE_PAGE_SIZE = 4;
 
 function money(value: string | number) {
   return `RWF ${Number(value).toLocaleString('en-US')}`;
 }
 
-function buildLoadMoreHref(q: string, status: string, nextTake: number) {
+function buildLoadMoreHref(
+  q: string,
+  status: string,
+  nextTake: number,
+  nextMobileTake: number,
+) {
   const params = new URLSearchParams();
 
   if (q) {
@@ -30,6 +37,7 @@ function buildLoadMoreHref(q: string, status: string, nextTake: number) {
   }
 
   params.set('take', String(nextTake));
+  params.set('mobileTake', String(nextMobileTake));
 
   return `/stock?${params.toString()}`;
 }
@@ -46,79 +54,63 @@ function getStockState(quantity: number, minQuantity: number) {
   if (quantity <= 0) {
     return {
       key: 'OUT',
-      text: 'Out of stock',
+      text: 'Out',
+      helper: 'Cannot sell',
       className:
-        'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200',
+        'border-[var(--danger)] bg-red-50 text-[var(--danger)] dark:bg-red-950/20',
     };
   }
 
   if (quantity <= minQuantity) {
     return {
       key: 'LOW',
-      text: 'Low stock',
+      text: 'Low',
+      helper: 'Check first',
       className:
-        'border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900/60 dark:bg-yellow-950/40 dark:text-yellow-200',
-    };
-  }
-
-  return {
-    key: 'GOOD',
-    text: 'Enough',
-    className:
-      'border-green-200 bg-green-50 text-green-700 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-200',
-  };
-}
-
-function getExpiryState(expiryDate: string | null, warningDays: number) {
-  if (!expiryDate) {
-    return {
-      key: 'NO_DATE',
-      text: 'No date',
-      className:
-        'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300',
-    };
-  }
-
-  const today = new Date();
-  const expiry = new Date(`${expiryDate}T00:00:00`);
-  const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / 86_400_000);
-
-  if (daysLeft < 0) {
-    return {
-      key: 'EXPIRED',
-      text: 'Expired',
-      className:
-        'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200',
-    };
-  }
-
-  if (daysLeft <= warningDays) {
-    return {
-      key: 'EXPIRING',
-      text: 'Expiring soon',
-      className:
-        'border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900/60 dark:bg-yellow-950/40 dark:text-yellow-200',
+        'border-[var(--secondary)] bg-yellow-50 text-yellow-700 dark:bg-yellow-950/20 dark:text-[var(--secondary)]',
     };
   }
 
   return {
     key: 'GOOD',
     text: 'Good',
+    helper: 'Enough',
     className:
-      'border-green-200 bg-green-50 text-green-700 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-200',
+      'border-[var(--success)] bg-green-50 text-[var(--success)] dark:bg-green-950/20',
   };
+}
+
+function productDetails(item: {
+  customerType: string;
+  size: string | null;
+  color: string | null;
+}) {
+  return [item.customerType, item.size, item.color].filter(Boolean).join(' / ');
+}
+
+function productValue(item: {
+  sellingPrice: string;
+  wholesalePrice: string;
+  quantity: number;
+}) {
+  const retail = Number(item.sellingPrice);
+  const wholesale = Number(item.wholesalePrice);
+  const price = retail > 0 ? retail : wholesale;
+
+  return price * item.quantity;
 }
 
 export default async function StockPage({ searchParams }: StockPageProps) {
   const params = await searchParams;
   const q = params?.q?.trim() || '';
-  const selectedStatus = ['OUT', 'LOW', 'EXPIRING', 'EXPIRED'].includes(params?.status || '')
+  const selectedStatus = ['OUT', 'LOW'].includes(params?.status || '')
     ? params?.status || ''
     : '';
-  const take = Math.max(PAGE_SIZE, Number(params?.take || PAGE_SIZE));
-
-  const settings = await db.select().from(businessSettings).limit(1);
-  const expiryWarningDays = Number(settings[0]?.expiryAlertDays || 60);
+  const take = Math.max(DESKTOP_PAGE_SIZE, Number(params?.take || DESKTOP_PAGE_SIZE));
+  const mobileTake = Math.max(
+    MOBILE_PAGE_SIZE,
+    Number(params?.mobileTake || MOBILE_PAGE_SIZE),
+  );
 
   const arrivalList = await db
     .select()
@@ -137,7 +129,9 @@ export default async function StockPage({ searchParams }: StockPageProps) {
           ? or(
               ilike(products.name, `%${q}%`),
               ilike(products.category, `%${q}%`),
-              ilike(products.batchNumber, `%${q}%`),
+              ilike(products.customerType, `%${q}%`),
+              ilike(products.size, `%${q}%`),
+              ilike(products.color, `%${q}%`),
               ilike(products.supplierName, `%${q}%`),
             )
           : undefined,
@@ -145,211 +139,205 @@ export default async function StockPage({ searchParams }: StockPageProps) {
     )
     .orderBy(desc(products.createdAt));
 
-  const rows = productList.map((product) => {
-    const stockState = getStockState(product.quantity, product.minQuantity);
-    const expiryState = getExpiryState(product.expiryDate, expiryWarningDays);
-
-    return {
-      product,
-      stockState,
-      expiryState,
-    };
-  });
+  const rows = productList.map((product) => ({
+    product,
+    stockState: getStockState(product.quantity, product.minQuantity),
+  }));
 
   const filteredRows = rows.filter((row) => {
     if (!selectedStatus) {
       return true;
     }
 
-    if (selectedStatus === 'OUT') {
-      return row.stockState.key === 'OUT';
-    }
-
-    if (selectedStatus === 'LOW') {
-      return row.stockState.key === 'LOW';
-    }
-
-    if (selectedStatus === 'EXPIRING') {
-      return row.expiryState.key === 'EXPIRING';
-    }
-
-    if (selectedStatus === 'EXPIRED') {
-      return row.expiryState.key === 'EXPIRED';
-    }
-
-    return true;
+    return row.stockState.key === selectedStatus;
   });
 
-  const visibleRows = filteredRows.slice(0, take);
-  const hasMore = filteredRows.length > visibleRows.length;
+  const desktopRows = filteredRows.slice(0, take);
+  const mobileRows = filteredRows.slice(0, mobileTake);
+  const desktopHasMore = filteredRows.length > desktopRows.length;
+  const mobileHasMore = filteredRows.length > mobileRows.length;
 
   const outOfStock = rows.filter((row) => row.stockState.key === 'OUT').length;
   const lowStock = rows.filter((row) => row.stockState.key === 'LOW').length;
-  const expiringSoon = rows.filter((row) => row.expiryState.key === 'EXPIRING').length;
-  const expired = rows.filter((row) => row.expiryState.key === 'EXPIRED').length;
+  const stockValue = rows.reduce((sum, row) => sum + productValue(row.product), 0);
 
   const summary = [
-    { label: 'Products', value: rows.length, helper: 'Stock items' },
-    { label: 'Out of stock', value: outOfStock, helper: 'Cannot sell' },
-    { label: 'Low stock', value: lowStock, helper: 'Need restock' },
-    { label: 'Expiring soon', value: expiringSoon, helper: `${expiryWarningDays} days warning` },
+    { label: 'All stock', value: rows.length, helper: 'Products in the shop' },
+    { label: 'Low stock', value: lowStock, helper: 'Check these first' },
+    { label: 'Out of stock', value: outOfStock, helper: 'Cannot sell now' },
+    { label: 'Stock value', value: money(stockValue), helper: 'Available value' },
   ];
 
   const filters = [
     { label: 'All', value: '', active: !selectedStatus },
-    { label: 'Out of stock', value: 'OUT', active: selectedStatus === 'OUT' },
     { label: 'Low stock', value: 'LOW', active: selectedStatus === 'LOW' },
-    { label: 'Expiring soon', value: 'EXPIRING', active: selectedStatus === 'EXPIRING' },
-    { label: 'Expired', value: 'EXPIRED', active: selectedStatus === 'EXPIRED' },
+    { label: 'Out of stock', value: 'OUT', active: selectedStatus === 'OUT' },
   ];
 
   return (
-    <section className="space-y-4">
-      <div className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="space-y-5 sm:space-y-6">
+      <section className="business-card rounded-3xl p-5 sm:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <h2 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--primary)]">
               Stock
+            </p>
+            <h2 className="boutique-display mt-2 text-4xl font-bold leading-none text-[var(--text)] sm:text-5xl">
+              Shop stock.
             </h2>
-            <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-              See products that are low, out of stock, expired, or expiring soon.
+            <p className="mt-3 text-sm font-bold leading-6 text-[var(--muted)]">
+              Check what is available, what is low, what is out, and what was recently added.
             </p>
           </div>
 
           <div className="grid gap-2 sm:grid-cols-2">
             <Link
               href="/stock/receive"
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[var(--primary)] bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:border-[var(--primary-strong)] hover:bg-[var(--primary-strong)]"
             >
+              <Plus className="h-4 w-4" />
               Add stock
             </Link>
             <Link
               href="/products/new"
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]"
             >
+              <PackagePlus className="h-4 w-4" />
               Add product
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {summary.map((item) => (
-          <article
-            key={item.label}
-            className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-          >
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+          <article key={item.label} className="business-card rounded-3xl p-4 sm:p-5">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
               {item.label}
             </p>
-            <p className="mt-3 text-xl font-black tracking-tight text-slate-950 dark:text-white sm:text-2xl">
+            <p className="mt-4 break-words text-2xl font-black tracking-tight text-[var(--text)] sm:text-3xl">
               {item.value}
             </p>
-            <p className="mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500">
+            <p className="mt-2 text-xs font-bold leading-5 text-[var(--muted)]">
               {item.helper}
             </p>
           </article>
         ))}
       </section>
 
-      <div className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-3 flex flex-wrap gap-2">
+      <section className="business-card rounded-3xl p-4 sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--primary)]">
+              Find stock
+            </p>
+            <h3 className="boutique-display mt-1 text-3xl font-bold leading-none text-[var(--text)]">
+              Products to check
+            </h3>
+          </div>
+
+          <form className="grid gap-2 sm:grid-cols-[1fr_auto] lg:min-w-[560px]">
+            <input type="hidden" name="status" value={selectedStatus} />
+            <input type="hidden" name="take" value={take} />
+            <input type="hidden" name="mobileTake" value={mobileTake} />
+
+            <div className="relative min-w-0">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+              <input
+                name="q"
+                defaultValue={q}
+                placeholder="Search name, category, size, color, or supplier"
+                className="h-11 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] pl-10 pr-3 text-sm font-bold text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)]"
+              />
+            </div>
+
+            <button className="h-11 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]">
+              Search
+            </button>
+          </form>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
           {filters.map((filter) => (
             <Link
               key={filter.label}
               href={filterHref(filter.value || null)}
               className={
                 filter.active
-                  ? 'inline-flex h-9 items-center justify-center rounded-lg border border-[var(--primary)] bg-[var(--primary-soft)] px-4 text-xs font-black text-[var(--primary-strong)] dark:border-[var(--primary)] dark:bg-[var(--primary)] dark:text-white'
-                  : 'inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-black text-slate-700 transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]'
+                  ? 'inline-flex h-9 items-center justify-center rounded-2xl border border-[var(--primary)] bg-[var(--primary)] px-4 text-xs font-black text-white shadow-sm'
+                  : 'inline-flex h-9 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]'
               }
             >
               {filter.label}
             </Link>
           ))}
         </div>
+      </section>
 
-        <form className="grid gap-2 sm:grid-cols-[1fr_auto]">
-          <input type="hidden" name="status" value={selectedStatus} />
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder="Search name, category, batch, or supplier"
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-[var(--primary)] dark:focus:ring-[var(--primary-soft)]"
-            />
-          </div>
-          <button className="h-11 rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]">
-            Search
-          </button>
-        </form>
-      </div>
-
-      {visibleRows.length === 0 ? (
-        <section className="border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-          <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">
+      {filteredRows.length === 0 ? (
+        <section className="business-card rounded-3xl p-6 text-center sm:p-10">
+          <h3 className="boutique-display text-3xl font-bold text-[var(--text)]">
             No stock found
           </h3>
-          <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-            Add products or change your search.
+          <p className="mx-auto mt-2 max-w-sm text-sm font-bold leading-6 text-[var(--muted)]">
+            Add products, add stock, or change your search.
           </p>
         </section>
       ) : (
         <>
-          <div className="hidden overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 md:block">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+          <div className="hidden overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm lg:block">
+            <table className="w-full table-fixed border-collapse text-left text-sm">
+              <thead className="border-b border-[var(--border)] bg-[var(--surface)] text-[11px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
                 <tr>
-                  <th className="px-4 py-3">Product</th>
-                  <th className="px-4 py-3">Quantity</th>
-                  <th className="px-4 py-3">Expiry</th>
-                  <th className="px-4 py-3">Value</th>
-                  <th className="px-4 py-3 text-right">Action</th>
+                  <th className="w-[30%] px-4 py-3">Product</th>
+                  <th className="w-[18%] px-4 py-3">Details</th>
+                  <th className="w-[18%] px-4 py-3">Quantity</th>
+                  <th className="w-[18%] px-4 py-3">Value</th>
+                  <th className="w-[16%] px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {visibleRows.map((row) => (
-                  <tr key={row.product.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-950/70">
+              <tbody className="divide-y divide-[var(--border)]">
+                {desktopRows.map((row) => (
+                  <tr key={row.product.id} className="transition hover:bg-[var(--surface)]">
                     <td className="px-4 py-5 align-top">
-                      <p className="font-black text-slate-900 dark:text-white">{row.product.name}</p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {row.product.category}
+                      <p className="break-words font-black text-[var(--text)]">
+                        {row.product.name}
                       </p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {row.product.batchNumber ? `Batch ${row.product.batchNumber}` : 'No batch number'}
-                        {row.product.supplierName ? ` · ${row.product.supplierName}` : ''}
+                      <div className="mt-1 space-y-1 text-xs font-bold leading-5 text-[var(--muted)]">
+                        <p className="break-words">{row.product.category}</p>
+                        <p className="break-words">
+                          {row.product.supplierName || 'No supplier saved'}
+                        </p>
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-5 align-top">
+                      <p className="break-words font-black leading-6 text-[var(--text)]">
+                        {productDetails(row.product) || 'Not saved'}
                       </p>
                     </td>
 
                     <td className="px-4 py-5 align-top">
-                      <p className="font-black text-slate-900 dark:text-white">
+                      <p className="break-words font-black text-[var(--text)]">
                         {row.product.quantity} {row.product.unit}
                       </p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        Minimum: {row.product.minQuantity}
+                      <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                        Warn at {row.product.minQuantity}
                       </p>
-                      <span className={`mt-2 inline-flex rounded-md border px-2 py-1 text-xs font-black ${row.stockState.className}`}>
+                      <span
+                        className={`mt-2 inline-flex rounded-2xl border px-3 py-1 text-xs font-black ${row.stockState.className}`}
+                      >
                         {row.stockState.text}
                       </span>
                     </td>
 
                     <td className="px-4 py-5 align-top">
-                      <p className="font-black text-slate-900 dark:text-white">
-                        {row.product.expiryDate || 'No date'}
+                      <p className="break-words font-black text-[var(--text)]">
+                        {money(productValue(row.product))}
                       </p>
-                      <span className={`mt-2 inline-flex rounded-md border px-2 py-1 text-xs font-black ${row.expiryState.className}`}>
-                        {row.expiryState.text}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-5 align-top">
-                      <p className="font-black text-slate-900 dark:text-white">
-                        {money(Number(row.product.sellingPrice) * row.product.quantity)}
-                      </p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        Sale value
+                      <p className="mt-1 text-xs font-bold text-[var(--muted)]">
+                        Available value
                       </p>
                     </td>
 
@@ -357,7 +345,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
                       <div className="flex justify-end">
                         <Link
                           href={`/products/${row.product.id}/edit`}
-                          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
+                          className="inline-flex h-9 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 text-xs font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]"
                         >
                           <Edit className="h-3.5 w-3.5" />
                           Edit
@@ -370,83 +358,119 @@ export default async function StockPage({ searchParams }: StockPageProps) {
             </table>
           </div>
 
-          <div className="space-y-3 md:hidden">
-            {visibleRows.map((row) => (
-              <article
-                key={row.product.id}
-                className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-              >
+          <div className="space-y-3 lg:hidden">
+            {mobileRows.map((row) => (
+              <article key={row.product.id} className="business-card rounded-3xl p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-black text-slate-950 dark:text-white">{row.product.name}</p>
-                    <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    <p className="break-words font-black text-[var(--text)]">
+                      {row.product.name}
+                    </p>
+                    <p className="mt-1 break-words text-xs font-bold leading-5 text-[var(--muted)]">
                       {row.product.category}
+                    </p>
+                    <p className="mt-1 break-words text-xs font-bold leading-5 text-[var(--muted)]">
+                      {productDetails(row.product) || 'Details not saved'}
                     </p>
                   </div>
 
-                  <span className={`shrink-0 rounded-md border px-2 py-1 text-xs font-black ${row.stockState.className}`}>
+                  <span
+                    className={`shrink-0 rounded-2xl border px-3 py-1 text-xs font-black ${row.stockState.className}`}
+                  >
                     {row.stockState.text}
                   </span>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <div className="border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                    <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+                <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
                       Quantity
                     </p>
-                    <p className="mt-1 font-black text-slate-900 dark:text-white">
+                    <p className="mt-1 break-words font-black text-[var(--text)]">
                       {row.product.quantity} {row.product.unit}
                     </p>
                   </div>
 
-                  <div className="border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                    <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
-                      Expiry
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
+                      Warn at
                     </p>
-                    <span className={`mt-1 inline-flex rounded-md border px-2 py-1 text-xs font-black ${row.expiryState.className}`}>
-                      {row.expiryState.text}
-                    </span>
-                  </div>
-
-                  <div className="border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                    <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
-                      Sale value
-                    </p>
-                    <p className="mt-1 font-black text-slate-900 dark:text-white">
-                      {money(Number(row.product.sellingPrice) * row.product.quantity)}
+                    <p className="mt-1 break-words font-black text-[var(--text)]">
+                      {row.product.minQuantity}
                     </p>
                   </div>
 
-                  <div className="border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                    <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
+                      Value
+                    </p>
+                    <p className="mt-1 break-words font-black text-[var(--text)]">
+                      {money(productValue(row.product))}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
                       Supplier
                     </p>
-                    <p className="mt-1 truncate font-black text-slate-900 dark:text-white">
+                    <p className="mt-1 break-words font-black leading-5 text-[var(--text)]">
                       {row.product.supplierName || 'Not saved'}
                     </p>
                   </div>
                 </div>
 
-                <Link
-                  href={`/products/${row.product.id}/edit`}
-                  className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
-                >
-                  <Edit className="h-3.5 w-3.5" />
-                  Edit stock
-                </Link>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Link
+                    href="/stock/receive"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-[var(--primary)] bg-[var(--primary)] px-3 text-xs font-black text-white shadow-sm transition hover:border-[var(--primary-strong)] hover:bg-[var(--primary-strong)]"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add stock
+                  </Link>
+
+                  <Link
+                    href={`/products/${row.product.id}/edit`}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 text-xs font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]"
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                    Edit
+                  </Link>
+                </div>
               </article>
             ))}
           </div>
 
-          <div className="flex flex-col items-center gap-2 border border-slate-200 bg-white p-4 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Showing {visibleRows.length} of {filteredRows.length}
+          <div className="business-card rounded-3xl p-4 text-center">
+            <p className="hidden text-xs font-bold text-[var(--muted)] lg:block">
+              Showing {desktopRows.length} of {filteredRows.length}
+            </p>
+            <p className="text-xs font-bold text-[var(--muted)] lg:hidden">
+              Showing {mobileRows.length} of {filteredRows.length}
             </p>
 
-            {hasMore ? (
+            {desktopHasMore ? (
               <Link
-                href={buildLoadMoreHref(q, selectedStatus, take + PAGE_SIZE)}
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
+                href={buildLoadMoreHref(
+                  q,
+                  selectedStatus,
+                  take + DESKTOP_PAGE_SIZE,
+                  mobileTake,
+                )}
+                className="mt-3 hidden h-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] lg:inline-flex"
+              >
+                Load more
+              </Link>
+            ) : null}
+
+            {mobileHasMore ? (
+              <Link
+                href={buildLoadMoreHref(
+                  q,
+                  selectedStatus,
+                  take,
+                  mobileTake + MOBILE_PAGE_SIZE,
+                )}
+                className="mt-3 inline-flex h-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] lg:hidden"
               >
                 Load more
               </Link>
@@ -455,51 +479,50 @@ export default async function StockPage({ searchParams }: StockPageProps) {
         </>
       )}
 
-      <section className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <section className="business-card rounded-3xl p-5 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h3 className="text-lg font-black text-slate-950 dark:text-white">Recent stock added</h3>
-            <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-              Latest products added to stock.
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--primary)]">
+              Recent stock added
             </p>
+            <h3 className="boutique-display mt-1 text-3xl font-bold leading-none text-[var(--text)]">
+              What came in recently
+            </h3>
           </div>
 
           <Link
             href="/stock/receive"
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
+            className="inline-flex h-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]"
           >
             Add stock
           </Link>
         </div>
 
         {arrivalList.length === 0 ? (
-          <p className="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">
-            No stock added yet.
+          <p className="mt-4 text-sm font-bold leading-6 text-[var(--muted)]">
+            No stock has been added yet.
           </p>
         ) : (
-          <div className="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="mt-5 grid gap-3 lg:grid-cols-5">
             {arrivalList.map((arrival) => (
-              <div key={arrival.id} className="grid gap-2 py-3 sm:grid-cols-[1fr_auto] sm:items-center">
-                <div>
-                  <p className="font-black text-slate-900 dark:text-white">{arrival.productName}</p>
-                  <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {arrival.quantityReceived} added · {arrival.supplierName || 'No supplier'} · {arrival.arrivedAt.toLocaleDateString()}
-                  </p>
-                </div>
-                <p className="font-black text-slate-900 dark:text-white">
-                  {money(Number(arrival.buyingPrice) * arrival.quantityReceived)}
+              <article
+                key={arrival.id}
+                className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-4"
+              >
+                <p className="break-words font-black leading-5 text-[var(--text)]">
+                  {arrival.productName}
                 </p>
-              </div>
+                <p className="mt-2 text-xs font-bold text-[var(--muted)]">
+                  Added {arrival.quantityReceived}
+                </p>
+                <p className="mt-1 break-words text-xs font-bold leading-5 text-[var(--muted)]">
+                  {arrival.supplierName || 'Supplier not saved'}
+                </p>
+              </article>
             ))}
           </div>
         )}
       </section>
-
-      {expired > 0 ? (
-        <p className="text-xs font-bold text-red-600 dark:text-red-300">
-          {expired} expired product{expired === 1 ? '' : 's'} need attention.
-        </p>
-      ) : null}
     </section>
   );
 }
