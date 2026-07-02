@@ -187,88 +187,89 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
       ) : (
         <>
           <div className="hidden overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm dark:border-[#343434] dark:bg-[#222222] lg:block">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead className="border-b border-neutral-200 bg-[#FAFAFC] text-[11px] font-black uppercase tracking-[0.14em] text-[#6B7280] dark:border-[#343434] dark:bg-[#161616] dark:text-[#A3A3A3]">
-                <tr>
-                  <th className="px-4 py-3">Sale</th>
-                  <th className="px-4 py-3">Customer</th>
-                  <th className="px-4 py-3">Payment</th>
-                  <th className="px-4 py-3">Total</th>
-                  <th className="px-4 py-3">Profit</th>
-                  <th className="px-4 py-3">Unpaid</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-[#343434]">
-                {visibleSales.map((sale) => {
-                  const items = itemList.filter((item) => item.saleId === sale.id);
-                  const names = items
-                    .map((item) => `${item.itemName} x${item.quantity} / ${priceTypeName(item.priceType)}`)
-                    .join(', ');
-                  const profit = items.reduce((sum, item) => sum + Number(item.profitAmount), 0);
+            <div className="grid grid-cols-[1.35fr_1.05fr_1.1fr_0.75fr_0.75fr_0.75fr] border-b border-neutral-200 bg-[#FAFAFC] px-4 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-[#6B7280] dark:border-[#343434] dark:bg-[#161616] dark:text-[#A3A3A3]">
+              <div>Sale</div>
+              <div>Customer</div>
+              <div>Payment</div>
+              <div>Total</div>
+              <div>Profit</div>
+              <div>Unpaid</div>
+            </div>
 
-                  return (
-                    <tr key={sale.id} className="transition hover:bg-[#FAFAFC] dark:hover:bg-[#161616]">
-                      <td className="px-4 py-4 align-top">
-                        <p className="font-black text-[#222222] dark:text-[#F5F5F5]">
-                          {dateTime(sale.saleDate)}
-                        </p>
-                        <p className="mt-1 max-w-md break-words text-xs font-semibold leading-5 text-[#6B7280] dark:text-[#A3A3A3]">
-                          {names || 'Sale items'}
-                        </p>
-                      </td>
+            <div className="divide-y divide-neutral-100 dark:divide-[#343434]">
+              {visibleSales.map((sale) => {
+                const items = itemList.filter((item) => item.saleId === sale.id);
+                const names = items
+                  .map((item) => `${item.itemName} x${item.quantity} / ${priceTypeName(item.priceType)}`)
+                  .join(', ');
+                const profit = items.reduce((sum, item) => sum + Number(item.profitAmount), 0);
 
-                      <td className="px-4 py-4 align-top">
-                        <p className="font-black text-[#222222] dark:text-[#F5F5F5]">
-                          {sale.customerName || 'Walk-in customer'}
-                        </p>
-                        {sale.customerPhone ? (
-                          <p className="mt-1 text-xs font-semibold text-[#6B7280] dark:text-[#A3A3A3]">
-                            {sale.customerPhone}
-                          </p>
-                        ) : null}
-                      </td>
+                return (
+                  <Link
+                    key={sale.id}
+                    href={`/sales/${sale.id}`}
+                    className="grid grid-cols-[1.35fr_1.05fr_1.1fr_0.75fr_0.75fr_0.75fr] px-4 py-4 text-sm transition hover:bg-[#FAFAFC] hover:text-[var(--primary)] dark:hover:bg-[#161616]"
+                  >
+                    <div className="min-w-0 pr-3">
+                      <p className="font-black text-[#222222] dark:text-[#F5F5F5]">
+                        {dateTime(sale.saleDate)}
+                      </p>
+                      <p className="mt-1 max-w-md break-words text-xs font-semibold leading-5 text-[#6B7280] dark:text-[#A3A3A3]">
+                        {names || 'Sale items'}
+                      </p>
+                    </div>
 
-                      <td className="px-4 py-4 align-top">
-                        <p className="font-black text-[#222222] dark:text-[#F5F5F5]">
-                          {paymentName(sale.paymentMethod)}
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-[#5F8A63] dark:text-[#79C27D]">
-                          Received: {money(sale.amountReceived)}
-                        </p>
+                    <div className="min-w-0 pr-3">
+                      <p className="break-words font-black text-[#222222] dark:text-[#F5F5F5]">
+                        {sale.customerName || 'Walk-in customer'}
+                      </p>
+                      {sale.customerPhone ? (
                         <p className="mt-1 text-xs font-semibold text-[#6B7280] dark:text-[#A3A3A3]">
-                          Change: {money(sale.changeReturned)}
+                          {sale.customerPhone}
                         </p>
-                        {Number(sale.extraKept) > 0 ? (
-                          <p className="mt-1 text-xs font-black text-[var(--primary)]">
-                            Extra kept: {money(sale.extraKept)}
-                          </p>
-                        ) : null}
-                      </td>
+                      ) : null}
+                    </div>
 
-                      <td className="px-4 py-4 align-top font-black text-[#222222] dark:text-[#F5F5F5]">
-                        {money(sale.totalAmount)}
-                      </td>
+                    <div className="min-w-0 pr-3">
+                      <p className="font-black text-[#222222] dark:text-[#F5F5F5]">
+                        {paymentName(sale.paymentMethod)}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold text-[#5F8A63] dark:text-[#79C27D]">
+                        Received: {money(sale.amountReceived)}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold text-[#6B7280] dark:text-[#A3A3A3]">
+                        Change: {money(sale.changeReturned)}
+                      </p>
+                      {Number(sale.extraKept) > 0 ? (
+                        <p className="mt-1 text-xs font-black text-[var(--primary)]">
+                          Extra kept: {money(sale.extraKept)}
+                        </p>
+                      ) : null}
+                    </div>
 
-                      <td className="px-4 py-4 align-top font-black text-[#5F8A63] dark:text-[#79C27D]">
-                        {money(profit)}
-                      </td>
+                    <div className="pr-3 font-black text-[#222222] dark:text-[#F5F5F5]">
+                      {money(sale.totalAmount)}
+                    </div>
 
-                      <td className="px-4 py-4 align-top">
-                        <span
-                          className={
-                            Number(sale.balanceAmount) > 0
-                              ? 'font-black text-[#F2A71B]'
-                              : 'font-black text-[#5F8A63] dark:text-[#79C27D]'
-                          }
-                        >
-                          {money(sale.balanceAmount)}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    <div className="pr-3 font-black text-[#5F8A63] dark:text-[#79C27D]">
+                      {money(profit)}
+                    </div>
+
+                    <div>
+                      <span
+                        className={
+                          Number(sale.balanceAmount) > 0
+                            ? 'font-black text-[#F2A71B]'
+                            : 'font-black text-[#5F8A63] dark:text-[#79C27D]'
+                        }
+                      >
+                        {money(sale.balanceAmount)}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           <div className="space-y-3 lg:hidden">
@@ -280,9 +281,10 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
               const profit = items.reduce((sum, item) => sum + Number(item.profitAmount), 0);
 
               return (
-                <article
+                <Link
                   key={sale.id}
-                  className="rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-[#343434] dark:bg-[#222222]"
+                  href={`/sales/${sale.id}`}
+                  className="block rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:border-[var(--primary)] dark:border-[#343434] dark:bg-[#222222]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -376,7 +378,7 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
                       Extra reason: {sale.extraReason}
                     </p>
                   ) : null}
-                </article>
+                </Link>
               );
             })}
           </div>
