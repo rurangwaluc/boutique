@@ -113,7 +113,11 @@ export const sales = pgTable('sales', {
   paymentMethod: paymentMethodEnum('payment_method').notNull().default('CASH'),
   totalAmount: numeric('total_amount', { precision: 12, scale: 2 }).notNull().default('0'),
   paidAmount: numeric('paid_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  amountReceived: numeric('amount_received', { precision: 12, scale: 2 }).notNull().default('0'),
+  changeReturned: numeric('change_returned', { precision: 12, scale: 2 }).notNull().default('0'),
+  extraKept: numeric('extra_kept', { precision: 12, scale: 2 }).notNull().default('0'),
   balanceAmount: numeric('balance_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  extraReason: text('extra_reason'),
   notes: text('notes'),
   saleDate: timestamp('sale_date', { withTimezone: true }).defaultNow().notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -131,8 +135,11 @@ export const saleItems = pgTable('sale_items', {
   itemName: varchar('item_name', { length: 180 }).notNull(),
   itemType: itemTypeEnum('item_type').notNull(),
   quantity: integer('quantity').notNull().default(1),
+  priceType: varchar('price_type', { length: 40 }).notNull().default('RETAIL'),
   unitPrice: numeric('unit_price', { precision: 12, scale: 2 }).notNull().default('0'),
+  unitCost: numeric('unit_cost', { precision: 12, scale: 2 }).notNull().default('0'),
   lineTotal: numeric('line_total', { precision: 12, scale: 2 }).notNull().default('0'),
+  profitAmount: numeric('profit_amount', { precision: 12, scale: 2 }).notNull().default('0'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
