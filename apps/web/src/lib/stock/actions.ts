@@ -21,14 +21,12 @@ export async function receiveStockAction(formData: FormData) {
     quantityReceived: formData.get('quantityReceived'),
     buyingPrice: formData.get('buyingPrice') || '0',
     supplierName: formData.get('supplierName') || undefined,
-    batchNumber: formData.get('batchNumber') || undefined,
-    expiryDate: formData.get('expiryDate') || undefined,
     reference: formData.get('reference') || undefined,
     notes: formData.get('notes') || undefined,
   });
 
   if (!parsed.success) {
-    const message = parsed.error.issues[0]?.message || 'Check the stock arrival form.';
+    const message = parsed.error.issues[0]?.message || 'Check the stock form.';
     redirect(`/stock/receive?error=${encodeURIComponent(message)}`);
   }
 
@@ -43,8 +41,6 @@ export async function receiveStockAction(formData: FormData) {
   }
 
   const supplierName = cleanOptional(parsed.data.supplierName);
-  const batchNumber = cleanOptional(parsed.data.batchNumber);
-  const expiryDate = cleanOptional(parsed.data.expiryDate);
   const reference = cleanOptional(parsed.data.reference);
   const notes = cleanOptional(parsed.data.notes);
 
@@ -55,8 +51,8 @@ export async function receiveStockAction(formData: FormData) {
       quantityReceived: parsed.data.quantityReceived,
       buyingPrice: parsed.data.buyingPrice,
       supplierName,
-      batchNumber,
-      expiryDate,
+      batchNumber: null,
+      expiryDate: null,
       reference,
       notes,
     });
@@ -67,8 +63,8 @@ export async function receiveStockAction(formData: FormData) {
         quantity: sql`${products.quantity} + ${parsed.data.quantityReceived}`,
         buyingPrice: parsed.data.buyingPrice,
         supplierName: supplierName ?? product.supplierName,
-        batchNumber: batchNumber ?? product.batchNumber,
-        expiryDate: expiryDate ?? product.expiryDate,
+        batchNumber: null,
+        expiryDate: null,
         updatedAt: new Date(),
       })
       .where(eq(products.id, product.id));

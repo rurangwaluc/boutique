@@ -20,49 +20,58 @@ export default async function ReceiveStockPage({ searchParams }: ReceiveStockPag
       id: products.id,
       name: products.name,
       category: products.category,
+      customerType: products.customerType,
+      size: products.size,
+      color: products.color,
       quantity: products.quantity,
       unit: products.unit,
       supplierName: products.supplierName,
-          })
+    })
     .from(products)
     .where(and(eq(products.status, 'ACTIVE'), eq(products.itemType, 'PRODUCT')))
     .orderBy(asc(products.name));
 
   return (
-    <section className="space-y-4">
-      <div className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--primary)] dark:text-[var(--primary)]">
+    <section className="space-y-5 sm:space-y-6">
+      <section className="business-card rounded-3xl p-5 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--primary)]">
               Stock
             </p>
-            <h2 className="mt-2 text-xl font-black tracking-tight text-slate-950 dark:text-white">
-              Add stock
+            <h2 className="boutique-display mt-2 text-4xl font-bold leading-none text-[var(--text)] sm:text-5xl">
+              Add stock.
             </h2>
-            <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-              Choose what came in and add it to what is left.
+            <p className="mt-3 text-sm font-bold leading-6 text-[var(--muted)]">
+              Choose what came in and add it to what is already in the shop.
             </p>
           </div>
 
           <Link
             href="/stock"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-black text-[var(--text)] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to stock
+            Stock
           </Link>
         </div>
-      </div>
+      </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <section className="grid gap-5 lg:grid-cols-[1fr_360px]">
         <ReceiveStockForm products={stockProducts} error={error} />
 
-        <aside className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-          <h3 className="text-lg font-black text-slate-950 dark:text-white">What this does</h3>
-          <div className="mt-4 space-y-3 text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
-            <p>What is left increases automatically.</p>
-            <p>Supplier, cost, and expiry date are saved when provided.</p>
-            <p>The owner can see what came in later.</p>
+        <aside className="business-card rounded-3xl p-5 sm:p-6">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--primary)]">
+            What this does
+          </p>
+          <h3 className="boutique-display mt-2 text-3xl font-bold leading-none text-[var(--text)]">
+            Stock increases automatically.
+          </h3>
+
+          <div className="mt-5 space-y-3 text-sm font-bold leading-6 text-[var(--muted)]">
+            <p>The quantity left in the shop increases after saving.</p>
+            <p>The latest cost and supplier can be updated from this form.</p>
+            <p>The owner can see what came in later from the stock page.</p>
           </div>
         </aside>
       </section>
