@@ -14,6 +14,7 @@ const optionalMoneySchema = z
 export const saleLineItemSchema = z.object({
   productId: z.string().uuid('Choose an item.'),
   quantity: z.number().int().min(1),
+  priceType: z.enum(['RETAIL', 'WHOLESALE']).default('RETAIL'),
   unitPrice: optionalMoneySchema,
 });
 
@@ -23,7 +24,10 @@ export const saleFormSchema = z.object({
   newCustomerName: z.string().trim().max(160).optional(),
   newCustomerPhone: z.string().trim().max(40).optional(),
   paymentMethod: z.enum(['CASH', 'MOBILE_MONEY', 'BANK', 'CARD']),
-  paidAmount: moneySchema,
+  amountReceived: moneySchema,
+  changeReturned: moneySchema.default('0'),
+  extraKept: moneySchema.default('0'),
+  extraReason: z.string().trim().max(1000).optional(),
   notes: z.string().trim().max(1000).optional(),
   items: z.array(saleLineItemSchema).min(1, 'Add at least one item.'),
 });
