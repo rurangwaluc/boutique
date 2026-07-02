@@ -177,7 +177,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                   <Link
                     key={sale.id}
                     href={`/debts/${sale.id}`}
-                    className="grid grid-cols-[1.2fr_1.35fr_0.75fr_0.75fr_0.75fr] px-4 py-4 text-sm transition hover:bg-[#FAFAFC] dark:hover:bg-[#161616]"
+                    className="grid cursor-pointer grid-cols-[1.2fr_1.35fr_0.75fr_0.75fr_0.75fr] px-4 py-4 text-sm transition hover:bg-[var(--primary-soft)] dark:hover:bg-[#161616]"
                   >
                     <div className="min-w-0 pr-3">
                       <p className="break-words font-black text-[#222222] dark:text-[#F5F5F5]">
