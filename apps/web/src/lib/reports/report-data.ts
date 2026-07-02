@@ -1,7 +1,8 @@
-import { eq, inArray } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { db } from '@dispensary/db/client';
 import {
-  businessSettings,
+  cashDrawerMovements,
+  cashDrawers,
   debtPayments,
   expenses,
   products,
@@ -93,7 +94,7 @@ export function getReportPeriod(reportDate: string, range: ReportRange) {
     return {
       start,
       end,
-      title: `Weekly report`,
+      title: 'Weekly report',
       label: `${readableDate(start.toISOString().slice(0, 10))} - ${readableDate(
         end.toISOString().slice(0, 10),
       )}`,
@@ -107,7 +108,7 @@ export function getReportPeriod(reportDate: string, range: ReportRange) {
     return {
       start,
       end,
-      title: `Monthly report`,
+      title: 'Monthly report',
       label: selected.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',
@@ -118,7 +119,7 @@ export function getReportPeriod(reportDate: string, range: ReportRange) {
   return {
     start: startOfDay(selected),
     end: endOfDay(selected),
-    title: `Daily report`,
+    title: 'Daily report',
     label: readableDate(reportDate),
   };
 }
@@ -127,16 +128,12 @@ function isInsidePeriod(value: Date, start: Date, end: Date) {
   return value.getTime() >= start.getTime() && value.getTime() <= end.getTime();
 }
 
-function getExpiryWarning(expiryDate: string | null, warningDays: number) {
-  if (!expiryDate) {
-    return false;
-  }
+function productStockValue(product: typeof products.$inferSelect) {
+  const sellingPrice = Number(product.sellingPrice || 0);
+  const wholesalePrice = Number(product.wholesalePrice || 0);
+  const fallbackPrice = sellingPrice > 0 ? sellingPrice : wholesalePrice;
 
-  const today = new Date();
-  const expiry = new Date(`${expiryDate}T00:00:00`);
-  const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / 86_400_000);
-
-  return daysLeft >= 0 && daysLeft <= warningDays;
+  return Number(product.quantity || 0) * fallbackPrice;
 }
 
 export async function getReport(reportDate: string, rangeValue: string | undefined | null) {
@@ -144,14 +141,33 @@ export async function getReport(reportDate: string, rangeValue: string | undefin
   const range = cleanReportRange(rangeValue);
   const period = getReportPeriod(selectedDate, range);
 
-  const [settings] = await db.select().from(businessSettings).limit(1);
-
-  const [saleList, expenseList, debtPaymentList, productList] = await Promise.all([
+  const [saleList, expenseList, debtPaymentList, productList, openDrawerList] = await Promise.all([
     db.select().from(sales),
     db.select().from(expenses),
     db.select().from(debtPayments),
     db.select().from(products).where(eq(products.status, 'ACTIVE')),
+    db
+      .select()
+      .from(cashDrawers)
+      .where(eq(cashDrawers.status, 'OPEN'))
+      .orderBy(desc(cashDrawers.openedAt))
+      .limit(1),
   ]);
+
+  const openDrawer = openDrawerList[0];
+
+  const allSaleIds = saleList.map((sale) => sale.id);
+  const allItemList =
+    allSaleIds.length > 0
+      ? await db.select().from(saleItems).where(inArray(saleItems.saleId, allSaleIds))
+      : [];
+
+  const drawerMovementList = openDrawer
+    ? await db
+        .select()
+        .from(cashDrawerMovements)
+        .where(eq(cashDrawerMovements.drawerId, openDrawer.id))
+    : [];
 
   const filteredSales = saleList.filter((sale) =>
     isInsidePeriod(sale.saleDate, period.start, period.end),
@@ -165,87 +181,68 @@ export async function getReport(reportDate: string, rangeValue: string | undefin
     isInsidePeriod(payment.paidAt, period.start, period.end),
   );
 
-  const saleIds = filteredSales.map((sale) => sale.id);
-  const itemList =
-    saleIds.length > 0
-      ? await db.select().from(saleItems).where(inArray(saleItems.saleId, saleIds))
-      : [];
+  const filteredSaleIds = filteredSales.map((sale) => sale.id);
+  const itemList = allItemList.filter((item) => filteredSaleIds.includes(item.saleId));
 
-  const productMap = new Map(productList.map((product) => [product.id, product]));
+  const debtPaidBySaleId = debtPaymentList.reduce<Map<string, number>>((map, payment) => {
+    map.set(payment.saleId, (map.get(payment.saleId) || 0) + Number(payment.amount));
+    return map;
+  }, new Map());
 
   const salesTotal = filteredSales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0);
-  const salesPaid = filteredSales.reduce((sum, sale) => sum + Number(sale.paidAmount), 0);
-  const creditGiven = filteredSales.reduce((sum, sale) => sum + Number(sale.balanceAmount), 0);
-  const debtPaid = filteredDebtPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
-  const expensesTotal = filteredExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
-  const moneyReceived = salesPaid + debtPaid;
 
-  const productCost = itemList.reduce((sum, item) => {
-    if (item.itemType === 'SERVICE') {
-      return sum;
-    }
-
-    const product = productMap.get(item.productId);
-    return sum + Number(product?.buyingPrice || 0) * item.quantity;
+  const salePayments = filteredSales.reduce((sum, sale) => {
+    const laterDebtPayments = debtPaidBySaleId.get(sale.id) || 0;
+    const firstPayment = Math.max(0, Number(sale.paidAmount) - laterDebtPayments);
+    return sum + firstPayment;
   }, 0);
 
-  const profitEstimate = salesTotal - productCost - expensesTotal;
+  const debtPaid = filteredDebtPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+  const moneyReceived = salePayments + debtPaid;
+  const creditGiven = filteredSales.reduce((sum, sale) => sum + Number(sale.balanceAmount), 0);
+  const expensesTotal = filteredExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
 
-  const expiryWarningDays = Number(settings?.expiryAlertDays || 60);
+  const grossProfit = itemList.reduce((sum, item) => sum + Number(item.profitAmount || 0), 0);
+  const netProfit = grossProfit - expensesTotal;
+
   const activeProducts = productList.filter((product) => product.itemType === 'PRODUCT');
+  const stockValue = activeProducts.reduce((sum, product) => sum + productStockValue(product), 0);
 
   const lowStock = activeProducts
     .filter((product) => product.quantity <= product.minQuantity)
     .slice(0, 10);
 
-  const expiringSoon = activeProducts
-    .filter((product) => getExpiryWarning(product.expiryDate, expiryWarningDays))
-    .slice(0, 10);
-
-  const soldProducts = itemList
-    .filter((item) => item.itemType === 'PRODUCT')
-    .reduce<Map<string, { name: string; quantity: number; total: number }>>((map, item) => {
+  const soldProducts = itemList.reduce<Map<string, { name: string; quantity: number; total: number; profit: number }>>(
+    (map, item) => {
       const current = map.get(item.productId) || {
         name: item.itemName,
         quantity: 0,
         total: 0,
+        profit: 0,
       };
 
       current.quantity += item.quantity;
       current.total += Number(item.lineTotal);
+      current.profit += Number(item.profitAmount || 0);
       map.set(item.productId, current);
 
       return map;
-    }, new Map());
-
-  const soldServices = itemList
-    .filter((item) => item.itemType === 'SERVICE')
-    .reduce<Map<string, { name: string; quantity: number; total: number }>>((map, item) => {
-      const current = map.get(item.productId) || {
-        name: item.itemName,
-        quantity: 0,
-        total: 0,
-      };
-
-      current.quantity += item.quantity;
-      current.total += Number(item.lineTotal);
-      map.set(item.productId, current);
-
-      return map;
-    }, new Map());
+    },
+    new Map(),
+  );
 
   const productRows = Array.from(soldProducts.values())
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 10);
-
-  const serviceRows = Array.from(soldServices.values())
     .sort((a, b) => b.total - a.total)
     .slice(0, 10);
 
   const paymentRows = ['CASH', 'MOBILE_MONEY', 'BANK', 'CARD'].map((method) => {
     const saleMoney = filteredSales
       .filter((sale) => sale.paymentMethod === method)
-      .reduce((sum, sale) => sum + Number(sale.paidAmount), 0);
+      .reduce((sum, sale) => {
+        const laterDebtPayments = debtPaidBySaleId.get(sale.id) || 0;
+        const firstPayment = Math.max(0, Number(sale.paidAmount) - laterDebtPayments);
+        return sum + firstPayment;
+      }, 0);
 
     const debtMoney = filteredDebtPayments
       .filter((payment) => payment.paymentMethod === method)
@@ -254,6 +251,8 @@ export async function getReport(reportDate: string, rangeValue: string | undefin
     return {
       method,
       name: paymentName(method),
+      saleMoney,
+      debtMoney,
       total: saleMoney + debtMoney,
     };
   });
@@ -269,26 +268,47 @@ export async function getReport(reportDate: string, rangeValue: string | undefin
     .sort((a, b) => b.total - a.total)
     .slice(0, 10);
 
+  const drawerMovementsForExpected = drawerMovementList.filter(
+    (movement) =>
+      movement.movementType !== 'OPENING_CASH' &&
+      movement.movementType !== 'CLOSING_COUNT' &&
+      movement.movementType !== 'CASH_DIFFERENCE',
+  );
+
+  const drawerIn = drawerMovementsForExpected
+    .filter((movement) => movement.direction === 'IN')
+    .reduce((sum, movement) => sum + Number(movement.amount), 0);
+
+  const drawerOut = drawerMovementsForExpected
+    .filter((movement) => movement.direction === 'OUT')
+    .reduce((sum, movement) => sum + Number(movement.amount), 0);
+
+  const cashDrawerExpected = openDrawer
+    ? Number(openDrawer.openingCash) + drawerIn - drawerOut
+    : 0;
+
   return {
     selectedDate,
     range,
     period,
-    expiryWarningDays,
+    openDrawer,
     summary: {
       salesTotal,
       moneyReceived,
+      salePayments,
+      debtPaid,
       creditGiven,
       expensesTotal,
-      profitEstimate,
+      grossProfit,
+      netProfit,
       salesCount: filteredSales.length,
       lowStockCount: lowStock.length,
-      expiringSoonCount: expiringSoon.length,
+      stockValue,
+      cashDrawerExpected,
     },
     paymentRows,
     expenseCategoryRows,
     productRows,
-    serviceRows,
     lowStock,
-    expiringSoon,
   };
 }

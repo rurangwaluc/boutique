@@ -18,19 +18,19 @@ type ReportPdfProps = {
 const styles = StyleSheet.create({
   page: {
     padding: 32,
-    backgroundColor: '#f8fafc',
-    color: '#0f172a',
+    backgroundColor: '#FAFAFC',
+    color: '#222222',
     fontSize: 10,
     fontFamily: 'Helvetica',
   },
   header: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#222222',
     color: '#ffffff',
     padding: 18,
     marginBottom: 16,
   },
   eyebrow: {
-    color: '#7dd3fc',
+    color: '#FF6FB2',
     fontSize: 9,
     letterSpacing: 2,
     textTransform: 'uppercase',
@@ -42,12 +42,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: '#D1D5DB',
     fontSize: 10,
   },
   section: {
     backgroundColor: '#ffffff',
-    border: '1 solid #e2e8f0',
+    border: '1 solid #E5E7EB',
     padding: 14,
     marginBottom: 12,
   },
@@ -65,12 +65,12 @@ const styles = StyleSheet.create({
   card: {
     width: '23.5%',
     backgroundColor: '#ffffff',
-    border: '1 solid #e2e8f0',
+    border: '1 solid #E5E7EB',
     padding: 10,
   },
   label: {
     fontSize: 7,
-    color: '#64748b',
+    color: '#6B7280',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     marginBottom: 5,
@@ -80,13 +80,13 @@ const styles = StyleSheet.create({
     fontWeight: 700,
   },
   helper: {
-    color: '#64748b',
+    color: '#6B7280',
     fontSize: 8,
     marginTop: 4,
   },
   row: {
     flexDirection: 'row',
-    borderBottom: '1 solid #e2e8f0',
+    borderBottom: '1 solid #E5E7EB',
     paddingVertical: 7,
     alignItems: 'center',
   },
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     fontWeight: 700,
   },
   small: {
-    color: '#64748b',
+    color: '#6B7280',
     fontSize: 8,
     marginTop: 2,
   },
@@ -117,11 +117,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   empty: {
-    color: '#64748b',
+    color: '#6B7280',
     fontSize: 9,
   },
   footer: {
-    color: '#64748b',
+    color: '#6B7280',
     fontSize: 8,
     marginTop: 8,
     textAlign: 'center',
@@ -159,17 +159,13 @@ function MoneyRows({ rows }: { rows: { name: string; total: number }[] }) {
   );
 }
 
-function SoldRows({
+function ProductRows({
   rows,
-  empty,
-  quantityLabel,
 }: {
-  rows: { name: string; quantity: number; total: number }[];
-  empty: string;
-  quantityLabel: string;
+  rows: { name: string; quantity: number; total: number; profit: number }[];
 }) {
   if (rows.length === 0) {
-    return <Text style={styles.empty}>{empty}</Text>;
+    return <Text style={styles.empty}>No products sold in this period.</Text>;
   }
 
   return (
@@ -179,7 +175,7 @@ function SoldRows({
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{row.name}</Text>
             <Text style={styles.small}>
-              {quantityLabel}: {row.quantity}
+              Quantity: {row.quantity} / Profit: {money(row.profit)}
             </Text>
           </View>
           <Text style={styles.amount}>{money(row.total)}</Text>
@@ -191,25 +187,21 @@ function SoldRows({
 
 function ReportPdf({ report }: ReportPdfProps) {
   const summary = [
-    { label: 'Sales', value: money(report.summary.salesTotal), helper: 'Products sold' },
-    { label: 'Money received', value: money(report.summary.moneyReceived), helper: 'Sales paid plus debt paid' },
-    { label: 'Unpaid', value: money(report.summary.creditGiven), helper: 'Money customers still owe' },
+    { label: 'Sales total', value: money(report.summary.salesTotal), helper: 'Total sold' },
+    { label: 'Money received', value: money(report.summary.moneyReceived), helper: 'Sales + debts paid' },
+    { label: 'Unpaid', value: money(report.summary.creditGiven), helper: 'Still owed' },
+    { label: 'Gross profit', value: money(report.summary.grossProfit), helper: 'Before expenses' },
     { label: 'Expenses', value: money(report.summary.expensesTotal), helper: 'Money spent' },
-    { label: 'Profit estimate', value: money(report.summary.profitEstimate), helper: 'Sales minus cost and expenses' },
-    { label: 'Sales count', value: report.summary.salesCount, helper: 'Number of sales' },
-    { label: 'Low stock', value: report.summary.lowStockCount, helper: 'Products needing restock' },
-    {
-      label: 'Expiring soon',
-      value: report.summary.expiringSoonCount,
-      helper: `${report.expiryWarningDays} days warning`,
-    },
+    { label: 'Net profit', value: money(report.summary.netProfit), helper: 'After expenses' },
+    { label: 'Stock value', value: money(report.summary.stockValue), helper: 'Current stock value' },
+    { label: 'Cash expected', value: money(report.summary.cashDrawerExpected), helper: report.openDrawer ? 'Open drawer' : 'No open drawer' },
   ];
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>La Elegant report</Text>
+          <Text style={styles.eyebrow}>La Elegant Boutique report</Text>
           <Text style={styles.title}>{report.period.title}</Text>
           <Text style={styles.subtitle}>{report.period.label}</Text>
         </View>
@@ -229,7 +221,29 @@ function ReportPdf({ report }: ReportPdfProps) {
           <View style={styles.column}>
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Money received by method</Text>
-              <MoneyRows rows={report.paymentRows} />
+              <MoneyRows rows={report.paymentRows.map((row) => ({ name: row.name, total: row.total }))} />
+            </View>
+          </View>
+
+          <View style={styles.column}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Profit breakdown</Text>
+              <MoneyRows
+                rows={[
+                  { name: 'Gross profit', total: report.summary.grossProfit },
+                  { name: 'Expenses', total: report.summary.expensesTotal },
+                  { name: 'Net profit', total: report.summary.netProfit },
+                ]}
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.twoColumns}>
+          <View style={styles.column}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Top products sold</Text>
+              <ProductRows rows={report.productRows} />
             </View>
           </View>
 
@@ -250,74 +264,27 @@ function ReportPdf({ report }: ReportPdfProps) {
           </View>
         </View>
 
-        <View style={styles.twoColumns}>
-          <View style={styles.column}>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Top products sold</Text>
-              <SoldRows
-                rows={report.productRows}
-                empty="No products sold in this period."
-                quantityLabel="Quantity sold"
-              />
-            </View>
-          </View>
-
-          <View style={styles.column}>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Other sales sold</Text>
-              <SoldRows
-                rows={report.serviceRows}
-                empty="No other sales in this period."
-                quantityLabel="Times sold"
-              />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.twoColumns}>
-          <View style={styles.column}>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Products to restock</Text>
-              {report.lowStock.length === 0 ? (
-                <Text style={styles.empty}>No low stock products.</Text>
-              ) : (
-                report.lowStock.map((product, index) => (
-                  <View
-                    key={product.id}
-                    style={index === report.lowStock.length - 1 ? styles.rowLast : styles.row}
-                  >
-                    <Text style={styles.name}>{product.name}</Text>
-                    <Text style={styles.amount}>
-                      {product.quantity} {product.unit}
-                    </Text>
-                  </View>
-                ))
-              )}
-            </View>
-          </View>
-
-          <View style={styles.column}>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Expiring soon</Text>
-              {report.expiringSoon.length === 0 ? (
-                <Text style={styles.empty}>No product is expiring soon.</Text>
-              ) : (
-                report.expiringSoon.map((product, index) => (
-                  <View
-                    key={product.id}
-                    style={index === report.expiringSoon.length - 1 ? styles.rowLast : styles.row}
-                  >
-                    <Text style={styles.name}>{product.name}</Text>
-                    <Text style={styles.amount}>{product.expiryDate || 'No date'}</Text>
-                  </View>
-                ))
-              )}
-            </View>
-          </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Products to restock</Text>
+          {report.lowStock.length === 0 ? (
+            <Text style={styles.empty}>No low stock products.</Text>
+          ) : (
+            report.lowStock.map((product, index) => (
+              <View
+                key={product.id}
+                style={index === report.lowStock.length - 1 ? styles.rowLast : styles.row}
+              >
+                <Text style={styles.name}>{product.name}</Text>
+                <Text style={styles.amount}>
+                  {product.quantity} {product.unit}
+                </Text>
+              </View>
+            ))
+          )}
         </View>
 
         <Text style={styles.footer}>
-          Generated by La Elegant Boutique · {new Date().toLocaleDateString('en-US')}
+          Generated by La Elegant Boutique / {new Date().toLocaleDateString('en-US')}
         </Text>
       </Page>
     </Document>
@@ -326,6 +293,7 @@ function ReportPdf({ report }: ReportPdfProps) {
 
 export async function GET(request: Request) {
   await requireOwner();
+
   const url = new URL(request.url);
   const selectedDate = cleanReportDate(url.searchParams.get('date'));
   const selectedRange = cleanReportRange(url.searchParams.get('range'));
@@ -333,7 +301,7 @@ export async function GET(request: Request) {
   const report = await getReport(selectedDate, selectedRange);
 
   const pdf = await renderToBuffer(<ReportPdf report={report} />);
-  const filename = `dispensary-${selectedRange}-report-${selectedDate}.pdf`;
+  const filename = `la-elegant-boutique-${selectedRange}-report-${selectedDate}.pdf`;
 
   return new Response(new Uint8Array(pdf), {
     headers: {
