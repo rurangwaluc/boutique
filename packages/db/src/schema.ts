@@ -17,6 +17,25 @@ export const productStatusEnum = pgEnum('product_status', ['ACTIVE', 'ARCHIVED']
 export const itemTypeEnum = pgEnum('item_type', ['PRODUCT', 'SERVICE']);
 export const paymentMethodEnum = pgEnum('payment_method', ['CASH', 'MOBILE_MONEY', 'BANK', 'CARD']);
 export const customerStatusEnum = pgEnum('customer_status', ['ACTIVE', 'ARCHIVED']);
+export const cashDrawerStatusEnum = pgEnum('cash_drawer_status', ['OPEN', 'CLOSED']);
+export const cashDrawerMovementTypeEnum = pgEnum('cash_drawer_movement_type', [
+  'OPENING_CASH',
+  'CASH_SALE',
+  'CUSTOMER_EXTRA_KEPT',
+  'CASH_ADDED',
+  'CASH_REMOVED',
+  'CASH_DEPOSIT',
+  'CASH_EXPENSE',
+  'CLOSING_COUNT',
+  'CASH_DIFFERENCE',
+]);
+export const cashDrawerDirectionEnum = pgEnum('cash_drawer_direction', ['IN', 'OUT', 'NONE']);
+export const cashDrawerDifferenceTypeEnum = pgEnum('cash_drawer_difference_type', [
+  'NONE',
+  'EXTRA',
+  'MISSING',
+]);
+
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -177,6 +196,49 @@ export const moneyAdditions = pgTable('money_additions', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const cashDrawers = pgTable('cash_drawers', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  openedByUserId: uuid('opened_by_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'restrict' }),
+  closedByUserId: uuid('closed_by_user_id').references(() => users.id, { onDelete: 'set null' }),
+  status: cashDrawerStatusEnum('status').notNull().default('OPEN'),
+  openingCash: numeric('opening_cash', { precision: 12, scale: 2 }).notNull().default('0'),
+  expectedCashAtClose: numeric('expected_cash_at_close', { precision: 12, scale: 2 })
+    .notNull()
+    .default('0'),
+  countedCash: numeric('counted_cash', { precision: 12, scale: 2 }).notNull().default('0'),
+  differenceAmount: numeric('difference_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  differenceType: cashDrawerDifferenceTypeEnum('difference_type').notNull().default('NONE'),
+  differenceReason: text('difference_reason'),
+  openingNote: text('opening_note'),
+  closingNote: text('closing_note'),
+  openedAt: timestamp('opened_at', { withTimezone: true }).defaultNow().notNull(),
+  closedAt: timestamp('closed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const cashDrawerMovements = pgTable('cash_drawer_movements', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  drawerId: uuid('drawer_id')
+    .notNull()
+    .references(() => cashDrawers.id, { onDelete: 'cascade' }),
+  createdByUserId: uuid('created_by_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'restrict' }),
+  movementType: cashDrawerMovementTypeEnum('movement_type').notNull(),
+  direction: cashDrawerDirectionEnum('direction').notNull(),
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  reason: text('reason'),
+  saleId: uuid('sale_id').references(() => sales.id, { onDelete: 'set null' }),
+  expenseId: uuid('expense_id').references(() => expenses.id, { onDelete: 'set null' }),
+  moneyTransferId: uuid('money_transfer_id').references(() => moneyTransfers.id, {
+    onDelete: 'set null',
+  }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
 }));
@@ -231,6 +293,41 @@ export const stockArrivalsRelations = relations(stockArrivals, ({ one }) => ({
   }),
 }));
 
+export const cashDrawersRelations = relations(cashDrawers, ({ one, many }) => ({
+  openedBy: one(users, {
+    fields: [cashDrawers.openedByUserId],
+    references: [users.id],
+  }),
+  closedBy: one(users, {
+    fields: [cashDrawers.closedByUserId],
+    references: [users.id],
+  }),
+  movements: many(cashDrawerMovements),
+}));
+
+export const cashDrawerMovementsRelations = relations(cashDrawerMovements, ({ one }) => ({
+  drawer: one(cashDrawers, {
+    fields: [cashDrawerMovements.drawerId],
+    references: [cashDrawers.id],
+  }),
+  createdBy: one(users, {
+    fields: [cashDrawerMovements.createdByUserId],
+    references: [users.id],
+  }),
+  sale: one(sales, {
+    fields: [cashDrawerMovements.saleId],
+    references: [sales.id],
+  }),
+  expense: one(expenses, {
+    fields: [cashDrawerMovements.expenseId],
+    references: [expenses.id],
+  }),
+  moneyTransfer: one(moneyTransfers, {
+    fields: [cashDrawerMovements.moneyTransferId],
+    references: [moneyTransfers.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
@@ -266,3 +363,10 @@ export type NewMoneyTransfer = typeof moneyTransfers.$inferInsert;
 
 export type MoneyAddition = typeof moneyAdditions.$inferSelect;
 export type NewMoneyAddition = typeof moneyAdditions.$inferInsert;
+
+
+export type CashDrawer = typeof cashDrawers.$inferSelect;
+export type NewCashDrawer = typeof cashDrawers.$inferInsert;
+
+export type CashDrawerMovement = typeof cashDrawerMovements.$inferSelect;
+export type NewCashDrawerMovement = typeof cashDrawerMovements.$inferInsert;
