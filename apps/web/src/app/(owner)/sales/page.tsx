@@ -3,6 +3,7 @@ import { desc, inArray } from 'drizzle-orm';
 import { Plus } from 'lucide-react';
 import { db } from '@dispensary/db/client';
 import { saleItems, sales } from '@dispensary/db/schema';
+import { requireUser } from '@/lib/auth/session';
 
 type SalesPageProps = {
   searchParams?: Promise<{
@@ -27,11 +28,26 @@ function paymentName(value: string) {
   return names[value] || value;
 }
 
+function dateTime(value: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(value);
+}
+
 function buildLoadMoreHref(nextTake: number) {
   return `/sales?take=${nextTake}`;
 }
 
+function priceTypeName(value: string) {
+  return value === 'WHOLESALE' ? 'Wholesale' : 'Retail';
+}
+
 export default async function SalesPage({ searchParams }: SalesPageProps) {
+  await requireUser();
+
   const params = await searchParams;
   const take = Math.max(PAGE_SIZE, Number(params?.take || PAGE_SIZE));
 
@@ -48,72 +64,121 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
 
   const today = new Date();
   const todayKey = today.toISOString().slice(0, 10);
-
   const todaySales = saleList.filter((sale) => sale.saleDate.toISOString().slice(0, 10) === todayKey);
+  const todaySaleIds = todaySales.map((sale) => sale.id);
+  const todayItems =
+    todaySaleIds.length > 0
+      ? await db.select().from(saleItems).where(inArray(saleItems.saleId, todaySaleIds))
+      : [];
+
   const totalToday = todaySales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0);
   const receivedToday = todaySales.reduce((sum, sale) => sum + Number(sale.paidAmount), 0);
   const creditToday = todaySales.reduce((sum, sale) => sum + Number(sale.balanceAmount), 0);
+  const changeToday = todaySales.reduce((sum, sale) => sum + Number(sale.changeReturned), 0);
+  const extraToday = todaySales.reduce((sum, sale) => sum + Number(sale.extraKept), 0);
+  const profitToday = todayItems.reduce((sum, item) => sum + Number(item.profitAmount), 0);
 
   const summary = [
-    { label: 'Today sales', value: money(totalToday), helper: 'Total sold today' },
-    { label: 'Money received', value: money(receivedToday), helper: 'Paid today' },
-    { label: 'Credit given', value: money(creditToday), helper: 'Unpaid today' },
-    { label: 'Sales count', value: todaySales.length, helper: 'Sales today' },
+    { label: 'Today sold', value: money(totalToday), helper: 'All sales total' },
+    { label: 'Received', value: money(receivedToday), helper: 'Money kept for sales' },
+    { label: 'Unpaid', value: money(creditToday), helper: 'Customer balance' },
+    { label: 'Profit', value: money(profitToday), helper: 'Using average buying cost' },
   ];
 
   return (
-    <section className="space-y-4">
-      <div className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="space-y-5">
+      <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm dark:border-[#343434] dark:bg-[#222222]">
+        <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
-            <h2 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--primary)]">
+              Sales desk
+            </p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight text-[#222222] dark:text-[#F5F5F5] sm:text-4xl">
               Sales
             </h2>
-            <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-              Record products, paid money, and unpaid balances.
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#6B7280] dark:text-[#A3A3A3]">
+              See what was sold, how money was received, what was returned as change, what extra was kept, and what remains unpaid.
             </p>
           </div>
 
           <Link
             href="/sales/new"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
           >
             <Plus className="h-4 w-4" />
             New sale
           </Link>
         </div>
-      </div>
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {summary.map((item) => (
-          <article
-            key={item.label}
-            className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-          >
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
-              {item.label}
+        <div className="grid grid-cols-2 gap-3 border-t border-neutral-100 p-4 dark:border-[#343434] sm:p-5 lg:grid-cols-4">
+          {summary.map((item) => (
+            <article
+              key={item.label}
+              className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]"
+            >
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#6B7280] dark:text-[#A3A3A3]">
+                {item.label}
+              </p>
+              <p className="mt-2 break-words text-lg font-black tracking-tight text-[#222222] dark:text-[#F5F5F5] sm:text-xl">
+                {item.value}
+              </p>
+              <p className="mt-1 text-xs font-semibold text-[#6B7280] dark:text-[#A3A3A3]">
+                {item.helper}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 px-4 pb-4 dark:border-[#343434] sm:px-5 sm:pb-5 lg:grid-cols-4">
+          <article className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#6B7280] dark:text-[#A3A3A3]">
+              Change returned
             </p>
-            <p className="mt-3 text-xl font-black tracking-tight text-slate-950 dark:text-white sm:text-2xl">
-              {item.value}
-            </p>
-            <p className="mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500">
-              {item.helper}
+            <p className="mt-2 text-sm font-black text-[#222222] dark:text-[#F5F5F5]">
+              {money(changeToday)}
             </p>
           </article>
-        ))}
-      </section>
+
+          <article className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#6B7280] dark:text-[#A3A3A3]">
+              Extra kept
+            </p>
+            <p className="mt-2 text-sm font-black text-[var(--primary)]">
+              {money(extraToday)}
+            </p>
+          </article>
+
+          <article className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#6B7280] dark:text-[#A3A3A3]">
+              Sales count
+            </p>
+            <p className="mt-2 text-sm font-black text-[#222222] dark:text-[#F5F5F5]">
+              {todaySales.length}
+            </p>
+          </article>
+
+          <article className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#6B7280] dark:text-[#A3A3A3]">
+              All records
+            </p>
+            <p className="mt-2 text-sm font-black text-[#222222] dark:text-[#F5F5F5]">
+              {saleList.length}
+            </p>
+          </article>
+        </div>
+      </div>
 
       {visibleSales.length === 0 ? (
-        <section className="border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-          <h3 className="text-xl font-black tracking-tight text-slate-950 dark:text-white">
+        <section className="rounded-3xl border border-neutral-200 bg-white p-6 text-center shadow-sm dark:border-[#343434] dark:bg-[#222222] sm:p-8">
+          <h3 className="font-display text-2xl font-black tracking-tight text-[#222222] dark:text-[#F5F5F5]">
             No sales yet
           </h3>
-          <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-            Start by recording the first sale.
+          <p className="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-[#6B7280] dark:text-[#A3A3A3]">
+            Start by recording the first boutique sale.
           </p>
           <Link
             href="/sales/new"
-            className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
+            className="mt-5 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)]"
           >
             <Plus className="h-4 w-4" />
             New sale
@@ -121,63 +186,79 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
         </section>
       ) : (
         <>
-          <div className="hidden overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 md:block">
+          <div className="hidden overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm dark:border-[#343434] dark:bg-[#222222] lg:block">
             <table className="w-full border-collapse text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+              <thead className="border-b border-neutral-200 bg-[#FAFAFC] text-[11px] font-black uppercase tracking-[0.14em] text-[#6B7280] dark:border-[#343434] dark:bg-[#161616] dark:text-[#A3A3A3]">
                 <tr>
                   <th className="px-4 py-3">Sale</th>
                   <th className="px-4 py-3">Customer</th>
                   <th className="px-4 py-3">Payment</th>
                   <th className="px-4 py-3">Total</th>
+                  <th className="px-4 py-3">Profit</th>
                   <th className="px-4 py-3">Unpaid</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-neutral-100 dark:divide-[#343434]">
                 {visibleSales.map((sale) => {
                   const items = itemList.filter((item) => item.saleId === sale.id);
-                  const names = items.map((item) => `${item.itemName} x${item.quantity}`).join(', ');
+                  const names = items
+                    .map((item) => `${item.itemName} x${item.quantity} / ${priceTypeName(item.priceType)}`)
+                    .join(', ');
+                  const profit = items.reduce((sum, item) => sum + Number(item.profitAmount), 0);
 
                   return (
-                    <tr key={sale.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-950/70">
+                    <tr key={sale.id} className="transition hover:bg-[#FAFAFC] dark:hover:bg-[#161616]">
                       <td className="px-4 py-4 align-top">
-                        <p className="font-black text-slate-900 dark:text-white">
-                          {sale.saleDate.toLocaleDateString()}
+                        <p className="font-black text-[#222222] dark:text-[#F5F5F5]">
+                          {dateTime(sale.saleDate)}
                         </p>
-                        <p className="mt-1 max-w-md text-xs font-semibold text-slate-500 dark:text-slate-400">
-                          {names}
+                        <p className="mt-1 max-w-md break-words text-xs font-semibold leading-5 text-[#6B7280] dark:text-[#A3A3A3]">
+                          {names || 'Sale items'}
                         </p>
                       </td>
 
                       <td className="px-4 py-4 align-top">
-                        <p className="font-black text-slate-900 dark:text-white">
+                        <p className="font-black text-[#222222] dark:text-[#F5F5F5]">
                           {sale.customerName || 'Walk-in customer'}
                         </p>
                         {sale.customerPhone ? (
-                          <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          <p className="mt-1 text-xs font-semibold text-[#6B7280] dark:text-[#A3A3A3]">
                             {sale.customerPhone}
                           </p>
                         ) : null}
                       </td>
 
                       <td className="px-4 py-4 align-top">
-                        <p className="font-black text-slate-900 dark:text-white">
+                        <p className="font-black text-[#222222] dark:text-[#F5F5F5]">
                           {paymentName(sale.paymentMethod)}
                         </p>
-                        <p className="mt-1 text-xs font-semibold text-green-700 dark:text-green-300">
-                          Paid: {money(sale.paidAmount)}
+                        <p className="mt-1 text-xs font-semibold text-[#5F8A63] dark:text-[#79C27D]">
+                          Received: {money(sale.amountReceived)}
                         </p>
+                        <p className="mt-1 text-xs font-semibold text-[#6B7280] dark:text-[#A3A3A3]">
+                          Change: {money(sale.changeReturned)}
+                        </p>
+                        {Number(sale.extraKept) > 0 ? (
+                          <p className="mt-1 text-xs font-black text-[var(--primary)]">
+                            Extra kept: {money(sale.extraKept)}
+                          </p>
+                        ) : null}
                       </td>
 
-                      <td className="px-4 py-4 align-top font-black text-slate-900 dark:text-white">
+                      <td className="px-4 py-4 align-top font-black text-[#222222] dark:text-[#F5F5F5]">
                         {money(sale.totalAmount)}
+                      </td>
+
+                      <td className="px-4 py-4 align-top font-black text-[#5F8A63] dark:text-[#79C27D]">
+                        {money(profit)}
                       </td>
 
                       <td className="px-4 py-4 align-top">
                         <span
                           className={
                             Number(sale.balanceAmount) > 0
-                              ? 'font-black text-yellow-700 dark:text-yellow-300'
-                              : 'font-black text-green-700 dark:text-green-300'
+                              ? 'font-black text-[#F2A71B]'
+                              : 'font-black text-[#5F8A63] dark:text-[#79C27D]'
                           }
                         >
                           {money(sale.balanceAmount)}
@@ -190,89 +271,125 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
             </table>
           </div>
 
-          <div className="space-y-3 md:hidden">
+          <div className="space-y-3 lg:hidden">
             {visibleSales.map((sale) => {
               const items = itemList.filter((item) => item.saleId === sale.id);
-              const names = items.map((item) => `${item.itemName} x${item.quantity}`).join(', ');
+              const names = items
+                .map((item) => `${item.itemName} x${item.quantity} / ${priceTypeName(item.priceType)}`)
+                .join(', ');
+              const profit = items.reduce((sum, item) => sum + Number(item.profitAmount), 0);
 
               return (
                 <article
                   key={sale.id}
-                  className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                  className="rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-[#343434] dark:bg-[#222222]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-black text-slate-950 dark:text-white">
+                      <p className="break-words font-black text-[#222222] dark:text-[#F5F5F5]">
                         {sale.customerName || 'Walk-in customer'}
                       </p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {sale.saleDate.toLocaleDateString()} · {paymentName(sale.paymentMethod)}
+                      <p className="mt-1 text-xs font-semibold text-[#6B7280] dark:text-[#A3A3A3]">
+                        {dateTime(sale.saleDate)} / {paymentName(sale.paymentMethod)}
                       </p>
                     </div>
 
                     <span
                       className={
                         Number(sale.balanceAmount) > 0
-                          ? 'shrink-0 rounded-md border border-yellow-200 bg-yellow-50 px-2 py-1 text-xs font-black text-yellow-700 dark:border-yellow-900/60 dark:bg-yellow-950/40 dark:text-yellow-200'
-                          : 'shrink-0 rounded-md border border-green-200 bg-green-50 px-2 py-1 text-xs font-black text-green-700 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-200'
+                          ? 'shrink-0 rounded-full border border-[#F2C94C]/50 bg-[#F2C94C]/10 px-3 py-1 text-xs font-black text-[#8a6413] dark:text-[#FFD45A]'
+                          : 'shrink-0 rounded-full border border-[#5F8A63]/30 bg-[#5F8A63]/10 px-3 py-1 text-xs font-black text-[#5F8A63] dark:text-[#79C27D]'
                       }
                     >
                       {Number(sale.balanceAmount) > 0 ? 'Unpaid' : 'Paid'}
                     </span>
                   </div>
 
-                  <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <p className="mt-3 break-words text-xs font-semibold leading-5 text-[#6B7280] dark:text-[#A3A3A3]">
                     {names || 'Sale items'}
                   </p>
 
-                  <div className="mt-4 grid grid-cols-3 gap-2">
-                    <div className="border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                  <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#6B7280]">
                         Total
                       </p>
-                      <p className="mt-1 text-xs font-black text-slate-900 dark:text-white">
+                      <p className="mt-1 text-xs font-black text-[#222222] dark:text-[#F5F5F5]">
                         {money(sale.totalAmount)}
                       </p>
                     </div>
 
-                    <div className="border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
-                        Paid
+                    <div className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#6B7280]">
+                        Received
                       </p>
-                      <p className="mt-1 text-xs font-black text-green-700 dark:text-green-300">
-                        {money(sale.paidAmount)}
+                      <p className="mt-1 text-xs font-black text-[#5F8A63] dark:text-[#79C27D]">
+                        {money(sale.amountReceived)}
                       </p>
                     </div>
 
-                    <div className="border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                    <div className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#6B7280]">
+                        Profit
+                      </p>
+                      <p className="mt-1 text-xs font-black text-[#5F8A63] dark:text-[#79C27D]">
+                        {money(profit)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#6B7280]">
+                        Change
+                      </p>
+                      <p className="mt-1 text-xs font-black text-[#222222] dark:text-[#F5F5F5]">
+                        {money(sale.changeReturned)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#6B7280]">
+                        Extra kept
+                      </p>
+                      <p className="mt-1 text-xs font-black text-[var(--primary)]">
+                        {money(sale.extraKept)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-neutral-200 bg-[#FAFAFC] p-3 dark:border-[#343434] dark:bg-[#161616]">
+                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#6B7280]">
                         Unpaid
                       </p>
                       <p
                         className={
                           Number(sale.balanceAmount) > 0
-                            ? 'mt-1 text-xs font-black text-yellow-700 dark:text-yellow-300'
-                            : 'mt-1 text-xs font-black text-green-700 dark:text-green-300'
+                            ? 'mt-1 text-xs font-black text-[#F2A71B]'
+                            : 'mt-1 text-xs font-black text-[#5F8A63] dark:text-[#79C27D]'
                         }
                       >
                         {money(sale.balanceAmount)}
                       </p>
                     </div>
                   </div>
+
+                  {sale.extraReason ? (
+                    <p className="mt-3 rounded-2xl border border-[#F05A9D]/20 bg-[#F05A9D]/10 px-3 py-2 text-xs font-bold text-[var(--primary)]">
+                      Extra reason: {sale.extraReason}
+                    </p>
+                  ) : null}
                 </article>
               );
             })}
           </div>
 
-          <div className="flex flex-col items-center gap-2 border border-slate-200 bg-white p-4 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col items-center gap-2 rounded-3xl border border-neutral-200 bg-white p-4 text-center shadow-sm dark:border-[#343434] dark:bg-[#222222]">
+            <p className="text-xs font-bold text-[#6B7280] dark:text-[#A3A3A3]">
               Showing {visibleSales.length} of {saleList.length}
             </p>
 
             {hasMore ? (
               <Link
                 href={buildLoadMoreHref(take + PAGE_SIZE)}
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary-strong)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-[var(--primary)] dark:hover:bg-slate-800 dark:hover:text-[var(--primary-strong)]"
+                className="inline-flex h-11 items-center justify-center rounded-2xl border border-neutral-200 bg-white px-5 text-sm font-black text-[#222222] shadow-sm transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary)] dark:border-[#343434] dark:bg-[#161616] dark:text-[#F5F5F5]"
               >
                 Load more
               </Link>
