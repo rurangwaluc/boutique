@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { desc, eq } from 'drizzle-orm';
 import { ArrowLeft } from 'lucide-react';
 import { db } from '@dispensary/db/client';
-import { debtPayments, saleItems, sales } from '@dispensary/db/schema';
+import { cashDrawers, debtPayments, saleItems, sales } from '@dispensary/db/schema';
 import { DebtPaymentForm } from './debt-payment-form';
 
 type DebtDetailPageProps = {
@@ -51,6 +51,10 @@ export default async function DebtDetailPage({
   }
 
   const items = await db.select().from(saleItems).where(eq(saleItems.saleId, sale.id));
+
+  const openDrawer = await db.query.cashDrawers.findFirst({
+    where: eq(cashDrawers.status, 'OPEN'),
+  });
 
   const payments = await db
     .select()
@@ -184,7 +188,7 @@ export default async function DebtDetailPage({
 
           <div className="mt-4">
             {Number(sale.balanceAmount) > 0 ? (
-              <DebtPaymentForm saleId={sale.id} balanceAmount={sale.balanceAmount} />
+              <DebtPaymentForm saleId={sale.id} balanceAmount={sale.balanceAmount} hasOpenDrawer={Boolean(openDrawer)} />
             ) : (
               <div className="border border-green-200 bg-green-50 p-4 text-sm font-black text-green-800 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-200">
                 This debt is fully paid.

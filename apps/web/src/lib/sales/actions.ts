@@ -274,6 +274,10 @@ export async function createSaleAction(
       extraReason,
     });
 
+    if (balanceAmount > 0 && parsed.data.customerMode === 'WALK_IN') {
+      throw new Error('Choose or save the customer before giving credit.');
+    }
+
     await db.transaction(async (tx) => {
       let customerId: string | null = null;
       let customerName: string | null = null;

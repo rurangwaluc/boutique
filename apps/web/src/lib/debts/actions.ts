@@ -1,9 +1,9 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { db } from '@dispensary/db/client';
-import { debtPayments, sales } from '@dispensary/db/schema';
+import { cashDrawerMovements, cashDrawers, debtPayments, sales } from '@dispensary/db/schema';
 import { debtPaymentSchema } from '@dispensary/validators/debt';
 import { requireUser } from '@/lib/auth/session';
 
@@ -25,7 +25,7 @@ export async function recordDebtPaymentAction(
   _previousState: DebtPaymentState,
   formData: FormData,
 ): Promise<DebtPaymentState> {
-  await requireUser();
+  const user = await requireUser();
 
   const parsed = debtPaymentSchema.safeParse({
     saleId: formData.get('saleId'),
@@ -70,8 +70,28 @@ export async function recordDebtPaymentAction(
     };
   }
 
+  let openDrawer: typeof cashDrawers.$inferSelect | undefined;
+
+  if (parsed.data.paymentMethod === 'CASH') {
+    const [drawer] = await db
+      .select()
+      .from(cashDrawers)
+      .where(eq(cashDrawers.status, 'OPEN'))
+      .orderBy(desc(cashDrawers.openedAt))
+      .limit(1);
+
+    if (!drawer) {
+      return {
+        error: 'Open the cash drawer before saving a cash debt payment.',
+      };
+    }
+
+    openDrawer = drawer;
+  }
+
   const nextPaid = Number(sale.paidAmount) + amount;
   const nextBalance = currentBalance - amount;
+  const customerName = sale.customerName || 'Walk-in customer';
 
   await db.transaction(async (tx) => {
     await tx.insert(debtPayments).values({
@@ -80,6 +100,18 @@ export async function recordDebtPaymentAction(
       amount: toMoney(amount),
       notes: cleanOptional(parsed.data.notes),
     });
+
+    if (openDrawer) {
+      await tx.insert(cashDrawerMovements).values({
+        drawerId: openDrawer.id,
+        createdByUserId: user.id,
+        movementType: 'CASH_DEBT_PAYMENT',
+        direction: 'IN',
+        amount: toMoney(amount),
+        reason: `Debt payment / ${customerName}`,
+        saleId: sale.id,
+      });
+    }
 
     await tx
       .update(sales)
@@ -93,9 +125,12 @@ export async function recordDebtPaymentAction(
 
   revalidatePath('/debts');
   revalidatePath(`/debts/${sale.id}`);
+  revalidatePath(`/sales/${sale.id}`);
   revalidatePath('/sales');
+  revalidatePath('/money');
   revalidatePath('/customers');
   revalidatePath('/dashboard');
+  revalidatePath('/reports');
 
   return {
     success: 'Payment saved.',

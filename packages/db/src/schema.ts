@@ -26,6 +26,7 @@ export const cashDrawerMovementTypeEnum = pgEnum('cash_drawer_movement_type', [
   'CASH_REMOVED',
   'CASH_DEPOSIT',
   'CASH_EXPENSE',
+  'CASH_DEBT_PAYMENT',
   'CLOSING_COUNT',
   'CASH_DIFFERENCE',
 ]);
