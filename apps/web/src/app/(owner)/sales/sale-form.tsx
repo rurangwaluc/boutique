@@ -769,10 +769,10 @@ export function SaleForm({ items, customers, hasOpenDrawer }: SaleFormProps) {
 
           <button
             type="submit"
-            disabled={pending || (paymentMethod === 'CASH' && !hasOpenDrawer && received > 0)}
-            className="mt-5 h-12 w-full rounded-2xl bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={pending || (paymentMethod === 'CASH' && !hasOpenDrawer)}
+            className="mt-5 h-12 w-full rounded-2xl bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:border disabled:border-[#E85D5D]/40 disabled:bg-[#343434] disabled:text-[#A3A3A3] disabled:shadow-none dark:disabled:bg-[#161616]"
           >
-            {pending ? 'Saving sale...' : 'Save sale'}
+            {pending ? 'Saving sale...' : paymentMethod === 'CASH' && !hasOpenDrawer ? 'Open cash drawer first' : 'Save sale'}
           </button>
         </aside>
       </section>
