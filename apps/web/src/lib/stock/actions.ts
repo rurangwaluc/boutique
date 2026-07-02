@@ -61,7 +61,20 @@ export async function receiveStockAction(formData: FormData) {
       .update(products)
       .set({
         quantity: sql`${products.quantity} + ${parsed.data.quantityReceived}`,
-        buyingPrice: parsed.data.buyingPrice,
+        buyingPrice: sql`
+          CASE
+            WHEN ${products.quantity} > 0 AND ${products.buyingPrice}::numeric > 0 THEN
+              ROUND(
+                (
+                  (${products.buyingPrice}::numeric * ${products.quantity})
+                  + (${parsed.data.buyingPrice}::numeric * ${parsed.data.quantityReceived})
+                )
+                / NULLIF((${products.quantity} + ${parsed.data.quantityReceived}), 0),
+                2
+              )
+            ELSE ${parsed.data.buyingPrice}::numeric
+          END
+        `,
         supplierName: supplierName ?? product.supplierName,
         batchNumber: null,
         expiryDate: null,
