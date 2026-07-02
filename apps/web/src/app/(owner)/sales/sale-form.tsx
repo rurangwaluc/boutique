@@ -144,8 +144,6 @@ function overAmount(total: number, amountReceived: number) {
 
 export function SaleForm({ items, customers, hasOpenDrawer }: SaleFormProps) {
   const [state, action, pending] = useActionState(createSaleAction, {});
-  const firstItem = items[0];
-
   const [customerMode, setCustomerMode] = useState<CustomerMode>('WALK_IN');
   const [customerId, setCustomerId] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
@@ -154,11 +152,11 @@ export function SaleForm({ items, customers, hasOpenDrawer }: SaleFormProps) {
   const [openRowIndex, setOpenRowIndex] = useState<number | null>(null);
   const [rows, setRows] = useState<SaleRow[]>([
     {
-      productId: firstItem?.id || '',
+      productId: '',
       quantity: 1,
-      priceType: firstItem ? itemDefaultPriceType(firstItem) : 'RETAIL',
-      unitPrice: firstItem ? itemStartingPrice(firstItem) : '',
-      searchText: firstItem ? itemLabel(firstItem) : '',
+      priceType: 'RETAIL',
+      unitPrice: '',
+      searchText: '',
     },
   ]);
 
@@ -209,11 +207,11 @@ export function SaleForm({ items, customers, hasOpenDrawer }: SaleFormProps) {
     setRows((current) => [
       ...current,
       {
-        productId: firstItem?.id || '',
+        productId: '',
         quantity: 1,
-        priceType: firstItem ? itemDefaultPriceType(firstItem) : 'RETAIL',
-        unitPrice: firstItem ? itemStartingPrice(firstItem) : '',
-        searchText: firstItem ? itemLabel(firstItem) : '',
+        priceType: 'RETAIL',
+        unitPrice: '',
+        searchText: '',
       },
     ]);
   }
