@@ -113,6 +113,13 @@
       "when": 1783004282163,
       "tag": "0015_rapid_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1783682191344,
+      "tag": "0016_polite_ego",
+      "breakpoints": true
     }
   ]
 }
