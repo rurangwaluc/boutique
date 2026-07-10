@@ -25,7 +25,6 @@ export async function updateBusinessSettingsAction(
     address: formData.get('address') || undefined,
     currency: 'RWF',
     lowStockAlertQuantity: formData.get('lowStockAlertQuantity'),
-    expiryAlertDays: formData.get('expiryAlertDays'),
   });
 
   if (!parsed.success) {
@@ -44,7 +43,7 @@ export async function updateBusinessSettingsAction(
       address: parsed.data.address || null,
       currency: 'RWF',
       lowStockAlertQuantity: parsed.data.lowStockAlertQuantity,
-      expiryAlertDays: parsed.data.expiryAlertDays,
+      expiryAlertDays: '60',
     });
   } else {
     await db
@@ -56,7 +55,7 @@ export async function updateBusinessSettingsAction(
         address: parsed.data.address || null,
         currency: 'RWF',
         lowStockAlertQuantity: parsed.data.lowStockAlertQuantity,
-        expiryAlertDays: parsed.data.expiryAlertDays,
+        expiryAlertDays: currentSettings.expiryAlertDays || '60',
         updatedAt: new Date(),
       })
       .where(eq(businessSettings.id, currentSettings.id));
@@ -64,8 +63,10 @@ export async function updateBusinessSettingsAction(
 
   revalidatePath('/settings');
   revalidatePath('/dashboard');
+  revalidatePath('/stock');
+  revalidatePath('/reports');
 
   return {
-    success: 'Business settings saved.',
+    success: 'Settings saved.',
   };
 }

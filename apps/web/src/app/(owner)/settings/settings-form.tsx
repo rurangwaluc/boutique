@@ -11,9 +11,19 @@ type SettingsFormProps = {
     address: string;
     currency: string;
     lowStockAlertQuantity: string;
-    expiryAlertDays: string;
   };
 };
+
+function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
+  return (
+    <label htmlFor={htmlFor} className="text-sm font-black text-[#222222] dark:text-[#F5F5F5]">
+      {children}
+    </label>
+  );
+}
+
+const inputClass =
+  'h-12 w-full rounded-2xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-[#222222] outline-none transition placeholder:text-[#9CA3AF] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-[#343434] dark:bg-[#161616] dark:text-[#F5F5F5]';
 
 export function SettingsForm({ settings }: SettingsFormProps) {
   const [state, action, pending] = useActionState(updateBusinessSettingsAction, {});
@@ -22,61 +32,51 @@ export function SettingsForm({ settings }: SettingsFormProps) {
     <form action={action} className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label htmlFor="businessName" className="text-sm font-black text-slate-800 dark:text-slate-200">
-            Business name
-          </label>
+          <FieldLabel htmlFor="businessName">Business name</FieldLabel>
           <input
             id="businessName"
             name="businessName"
             defaultValue={settings.businessName}
             required
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
+            className={inputClass}
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="ownerName" className="text-sm font-black text-slate-800 dark:text-slate-200">
-            Owner name
-          </label>
+          <FieldLabel htmlFor="ownerName">Owner name</FieldLabel>
           <input
             id="ownerName"
             name="ownerName"
             defaultValue={settings.ownerName}
             required
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
+            className={inputClass}
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="phone" className="text-sm font-black text-slate-800 dark:text-slate-200">
-            Phone number
-          </label>
+          <FieldLabel htmlFor="phone">Phone number</FieldLabel>
           <input
             id="phone"
             name="phone"
             defaultValue={settings.phone}
             placeholder="+250..."
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
+            className={inputClass}
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="currency" className="text-sm font-black text-slate-800 dark:text-slate-200">
-            Currency
-          </label>
+          <FieldLabel htmlFor="currency">Currency</FieldLabel>
           <input
             id="currency"
             name="currency"
-            value="RWF"
+            value={settings.currency}
             readOnly
-            className="h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm font-black text-slate-600 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+            className="h-12 w-full rounded-2xl border border-neutral-200 bg-[#FAFAFC] px-4 text-sm font-black text-[#6B7280] outline-none dark:border-[#343434] dark:bg-[#161616] dark:text-[#A3A3A3]"
           />
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="lowStockAlertQuantity" className="text-sm font-black text-slate-800 dark:text-slate-200">
-            Low stock alert quantity
-          </label>
+        <div className="space-y-2 sm:col-span-2">
+          <FieldLabel htmlFor="lowStockAlertQuantity">Low stock warning</FieldLabel>
           <input
             id="lowStockAlertQuantity"
             name="lowStockAlertQuantity"
@@ -84,47 +84,34 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             min="1"
             defaultValue={settings.lowStockAlertQuantity}
             required
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
+            className={inputClass}
           />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="expiryAlertDays" className="text-sm font-black text-slate-800 dark:text-slate-200">
-            Expiry alert days
-          </label>
-          <input
-            id="expiryAlertDays"
-            name="expiryAlertDays"
-            type="number"
-            min="1"
-            defaultValue={settings.expiryAlertDays}
-            required
-            className="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
-          />
+          <p className="text-xs font-semibold leading-5 text-[#6B7280] dark:text-[#A3A3A3]">
+            The system warns you when a product reaches this quantity.
+          </p>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="address" className="text-sm font-black text-slate-800 dark:text-slate-200">
-          Business address
-        </label>
+        <FieldLabel htmlFor="address">Business address</FieldLabel>
         <textarea
           id="address"
           name="address"
           defaultValue={settings.address}
           rows={4}
-          className="w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-[var(--primary-soft)]"
+          placeholder="Shop location or business address"
+          className="w-full resize-none rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-semibold text-[#222222] outline-none transition placeholder:text-[#9CA3AF] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-soft)] dark:border-[#343434] dark:bg-[#161616] dark:text-[#F5F5F5]"
         />
       </div>
 
       {state.error ? (
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm font-bold text-yellow-800 dark:border-yellow-900/60 dark:bg-yellow-950/40 dark:text-yellow-200">
+        <div className="rounded-2xl border border-[#F2C94C]/50 bg-[#F2C94C]/10 px-4 py-3 text-sm font-bold text-[#8A5A00] dark:text-[#FFD45A]">
           {state.error}
         </div>
       ) : null}
 
       {state.success ? (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-200">
+        <div className="rounded-2xl border border-[#5F8A63]/40 bg-[#5F8A63]/10 px-4 py-3 text-sm font-bold text-[#5F8A63] dark:text-[#79C27D]">
           {state.success}
         </div>
       ) : null}
@@ -133,7 +120,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         <button
           type="submit"
           disabled={pending}
-          className="h-11 w-full rounded-lg bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+          className="h-11 w-full rounded-2xl bg-[var(--primary)] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
         >
           {pending ? 'Saving...' : 'Save settings'}
         </button>
